@@ -1,0 +1,103 @@
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+
+export default function RegisterScreen() {
+  return (
+    <View style={styles.container}>
+      {/* Logo */}
+      <Image
+        source={require("../../assets/images/logo.png")}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+
+      {/* Form */}
+      <View style={styles.form}>
+        <Text style={styles.label}>Full Name (eg. Juan Dela Cruz)</Text>
+        <TextInput style={styles.input} />
+
+        <Text style={styles.label}>Address</Text>
+        <TextInput style={styles.input} />
+
+        <Text style={styles.label}>Email</Text>
+        <TextInput style={styles.input} keyboardType="email-address" />
+
+        <Text style={styles.label}>Password</Text>
+        <TextInput style={styles.input} secureTextEntry />
+
+        <Text style={styles.label}>Confirm Password</Text>
+        <TextInput style={styles.input} secureTextEntry />
+      </View>
+
+      {/* Register Button */}
+      <TouchableOpacity style={styles.button}>
+        <Text style={styles.buttonText}>Register</Text>
+      </TouchableOpacity>
+
+      {/* Footer */}
+      <Text style={styles.footer}>Register your Account</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#4DA3FF",
+    alignItems: "center",
+    paddingTop: 70,
+  },
+
+  logo: {
+    width: 140,
+    height: 140,
+    marginBottom: 20,
+  },
+
+  form: {
+    width: "80%",
+  },
+
+  label: {
+    color: "#EAF7FF",
+    fontSize: 13,
+    marginBottom: 6,
+    marginLeft: 8,
+    textAlign: "center",
+  },
+
+  input: {
+    backgroundColor: "#E9F8FF",
+    height: 42,
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    marginBottom: 14,
+  },
+
+  button: {
+    backgroundColor: "#A8F0C6",
+    width: 240,
+    paddingVertical: 14,
+    borderRadius: 30,
+    marginTop: 24,
+  },
+
+  buttonText: {
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
+  },
+
+  footer: {
+    marginTop: 28,
+    fontSize: 14,
+    color: "#1E4F7A",
+  },
+});
