@@ -1,10 +1,10 @@
 import {
-  View,
+  Image,
+  StyleSheet,
   Text,
   TextInput,
-  StyleSheet,
-  Image,
   TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function RegisterScreen() {
@@ -74,7 +74,9 @@ const styles = StyleSheet.create({
 
   input: {
     backgroundColor: "#E9F8FF",
-    height: 42,
+    height: 38,
+      width: "100%",          // 👈 ADD THIS
+  alignSelf: "center",   // 👈 CENTER IT
     borderRadius: 22,
     paddingHorizontal: 16,
     marginBottom: 14,

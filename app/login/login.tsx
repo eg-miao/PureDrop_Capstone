@@ -1,13 +1,16 @@
+import { useRouter } from "expo-router";
 import {
-  View,
+  Image,
+  StyleSheet,
   Text,
   TextInput,
-  StyleSheet,
-  Image,
   TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function LoginScreen() {
+  const router = useRouter(); // ✅ correct router
+
   return (
     <View style={styles.container}>
       {/* Logo */}
@@ -26,6 +29,7 @@ export default function LoginScreen() {
         <TextInput
           style={styles.input}
           keyboardType="email-address"
+          autoCapitalize="none"
         />
 
         <Text style={styles.label}>Password</Text>
@@ -36,7 +40,10 @@ export default function LoginScreen() {
       </View>
 
       {/* Login Button */}
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push("../regular_user/home")}
+      >
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
@@ -51,11 +58,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#4DA3FF",
     alignItems: "center",
-    paddingTop: 70, // SAME as Register
+    paddingTop: 70,
   },
 
   logo: {
-    width: 140,     // SAME as Register
+    width: 140,
     height: 140,
     marginBottom: 14,
   },
@@ -67,7 +74,7 @@ const styles = StyleSheet.create({
   },
 
   form: {
-    width: "80%",   // SAME as Register
+    width: "80%",
   },
 
   label: {
