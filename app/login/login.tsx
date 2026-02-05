@@ -1,5 +1,7 @@
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
+  Alert,
   Image,
   StyleSheet,
   Text,
@@ -7,27 +9,49 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { getLoginErrorMessage } from "./_errors/logerror";
+import { loginUser } from "./_functions/loginfunctions";
 
 export default function LoginScreen() {
-  const router = useRouter(); // ✅ correct router
+  const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
+
+      const user = await loginUser({ email, password });
+
+      Alert.alert("Success", "Logged in successfully");
+
+      // You can check role here later if needed
+      router.replace("/regular_user/home");
+    } catch (err: unknown) {
+      Alert.alert("Error", getLoginErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <Image
         source={require("../../assets/images/logo.png")}
         style={styles.logo}
         resizeMode="contain"
       />
 
-      {/* Subtitle */}
       <Text style={styles.subtitle}>Login to your Account</Text>
 
-      {/* Form */}
       <View style={styles.form}>
         <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
+          value={email}
+          onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
         />
@@ -35,23 +59,27 @@ export default function LoginScreen() {
         <Text style={styles.label}>Password</Text>
         <TextInput
           style={styles.input}
+          value={password}
+          onChangeText={setPassword}
           secureTextEntry
         />
       </View>
 
-      {/* Login Button */}
       <TouchableOpacity
         style={styles.button}
-        onPress={() => router.push("../regular_user/home")}
+        onPress={handleLogin}
+        disabled={loading}
       >
-        <Text style={styles.buttonText}>Login</Text>
+        <Text style={styles.buttonText}>
+          {loading ? "Logging in..." : "Login"}
+        </Text>
       </TouchableOpacity>
 
-      {/* Footer */}
       <Text style={styles.footer}>Login to your Account</Text>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

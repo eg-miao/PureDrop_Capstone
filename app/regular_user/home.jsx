@@ -1,14 +1,60 @@
-import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
+import { auth, db } from "../../firebaseConfig";
 
 export default function MainPage() {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Listen to auth state changes
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        // Fetch Firestore user profile
+        const userDocRef = doc(db, "regular_user", currentUser.uid);
+        const userSnap = await getDoc(userDocRef);
+
+        if (userSnap.exists()) {
+          setUser({ uid: currentUser.uid, email: currentUser.email, ...userSnap.data() });
+        } else {
+          console.warn("User profile not found in Firestore");
+        }
+      } else {
+        // Redirect to login if no user
+        router.replace("/login/login");
+      }
+      setLoading(false);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.replace("/login/login");
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#ffffff" />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {/* HEADER */}
@@ -22,41 +68,47 @@ export default function MainPage() {
           “Report water problems in your community easily”
         </Text>
 
-        <Text style={styles.title}>Explore</Text>
+        {user && <Text style={styles.title}>Hello, {user.fullName || "User"}</Text>}
       </View>
 
       {/* BUTTON GRID */}
       <View style={styles.grid}>
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => router.push("/regular_user/report")}
+        >
           <Text style={styles.cardText}>Report a Water Problem</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => router.push("/regular_user/view-reports")}
+        >
           <Text style={styles.cardText}>View Reports</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => router.push("/regular_user/reports-list")}
+        >
           <Text style={styles.cardText}>Reports List</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => router.push("/regular_user/directory")}
+        >
           <Text style={styles.cardText}>Directory</Text>
         </TouchableOpacity>
-      </View>
 
-      {/* BOTTOM NAV */}
-      <View style={styles.bottomNav}>
-        <Ionicons name="home-outline" size={26} color="#1e88e5" />
-        <Ionicons name="notifications-outline" size={26} color="#1e88e5" />
-
-        <Image
-          source={require("../../assets/images/icon.png")}
-          style={styles.avatar}
-        />
+        {/* <TouchableOpacity style={[styles.card, { backgroundColor: "#f87171" }]} onPress={handleLogout}>
+          <Text style={styles.cardText}>Logout</Text>
+        </TouchableOpacity> */}
       </View>
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -85,9 +137,9 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 36,
+    fontSize: 24,
     color: "#ffffff",
-    fontWeight: "300",
+    fontWeight: "500",
     alignSelf: "flex-start",
     marginBottom: 20,
   },
@@ -117,21 +169,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: "center",
     fontWeight: "500",
-  },
-
-  bottomNav: {
-    height: 65,
-    backgroundColor: "#e0f2fe",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-  },
-
-  avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
   },
 });
