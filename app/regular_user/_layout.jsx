@@ -125,7 +125,9 @@ export default function RegularUserLayout() {
       <Tabs.Screen name="create_report/createreport" options={{ href: null }} />
       <Tabs.Screen name="profile/profileview" options={{ href: null }} />
       <Tabs.Screen name="reports-list" options={{ href: null }} />
+      <Tabs.Screen name="all_reports/all_reportlist" options={{ href: null }} />
       <Tabs.Screen name="view_reportuser" options={{ href: null, tabBarStyle: { display: "none" } }} />
+      <Tabs.Screen name="view_allrep/viewallreports" options={{ href: null, tabBarStyle: { display: "none" } }} />
       <Tabs.Screen name="directory" options={{ href: null }} />
       <Tabs.Screen name="about" options={{ href: null }} />
       <Tabs.Screen

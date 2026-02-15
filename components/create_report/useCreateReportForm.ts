@@ -1,7 +1,7 @@
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { Alert, Platform } from "react-native";
-import { collection, doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, getDoc, runTransaction, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { getPublicFileUrl, uploadFile } from "../../api/storage";
 import { getCurrentGpsLocation, getLocationFromCoordinates } from "../../app/regular_user/create_report/creategps";
 import { auth, db } from "../../firebaseConfig";
@@ -13,6 +13,25 @@ export type Attachment = {
   fileName?: string | null;
 };
 
+const reserveNextReportId = async (uid: string) => {
+  const userRef = doc(db, "regular_user", uid);
+
+  const nextValue = await runTransaction(db, async (transaction) => {
+    const userSnap = await transaction.get(userRef);
+    if (!userSnap.exists()) {
+      throw new Error("Profile missing");
+    }
+
+    const data = userSnap.data() as { reportCounter?: unknown };
+    const currentCounter = typeof data.reportCounter === "number" ? data.reportCounter : 0;
+    const nextCounter = currentCounter + 1;
+
+    transaction.update(userRef, { reportCounter: nextCounter });
+    return nextCounter;
+  });
+
+  return String(nextValue);
+};
 export function useCreateReportForm() {
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
@@ -196,7 +215,7 @@ export function useCreateReportForm() {
 
     try {
       setSubmitLoading(true);
-      const reportId = `report-${Date.now()}`;
+      const reportId = await reserveNextReportId(currentUser.uid);
       const uploadedUrls: string[] = [];
 
       for (let i = 0; i < attachments.length; i += 1) {
@@ -231,10 +250,17 @@ export function useCreateReportForm() {
       }
 
       const reportDocRef = doc(collection(db, "regular_user", currentUser.uid, "reports"), reportId);
+      const userData = userDocSnap.data() as {
+        fullName?: unknown;
+        profileImageUrl?: unknown;
+      };
 
       await setDoc(reportDocRef, {
         reportId,
         userId: currentUser.uid,
+        reporterName: typeof userData.fullName === "string" ? userData.fullName : null,
+        reporterAvatarUrl:
+          typeof userData.profileImageUrl === "string" ? userData.profileImageUrl : null,
         category: trimmedCategory,
         issue: trimmedIssue,
         location: trimmedLocation || null,
@@ -294,3 +320,6 @@ export function useCreateReportForm() {
     waterMeter,
   };
 }
+
+
+

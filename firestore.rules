@@ -3,7 +3,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /regular_user/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
+      // Community report list needs reporter name and avatar from user docs.
+      allow read: if request.auth != null;
 
       // Allow profile creation by the authenticated owner.
       allow create: if request.auth != null && request.auth.uid == userId;
@@ -14,13 +15,25 @@ service cloud.firestore {
                     && isValidUserUpdate();
     }
 
-    match /regular_user/{userId}/reports/{reportId} {
-      allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
+    // Required for collectionGroup(db, "reports") queries.
+    match /{documentPath=**}/reports/{reportId} {
+      // Query-safe read rule for collectionGroup.
+      allow read: if request.auth != null;
+
+      // Create allowed only for signed-in owner documents.
+      allow create: if request.auth != null
+                    && request.resource.data.userId is string
+                    && request.resource.data.userId == request.auth.uid;
+
+      // Update/delete allowed only for owner of existing report.
+      allow update, delete: if request.auth != null
+                            && resource.data.userId is string
+                            && resource.data.userId == request.auth.uid;
     }
 
     function isValidUserUpdate() {
       // Prevent privilege escalation.
-      return !('role' in request.resource.data) || request.resource.data.role == resource.data.role;
+      return !("role" in request.resource.data) || request.resource.data.role == resource.data.role;
     }
   }
 }

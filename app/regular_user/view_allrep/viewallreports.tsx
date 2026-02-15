@@ -13,10 +13,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { auth, db } from "../../firebaseConfig";
+import { auth, db } from "../../../firebaseConfig";
 
-type DetailedReport = {
+type DetailedCommunityReport = {
   reportId: string;
+  reporterName: string;
+  reporterAvatarUrl: string | null;
   category: string;
   issue: string;
   location: string | null;
@@ -31,31 +33,16 @@ const normalizeStatus = (value: unknown) => {
   const normalized = value.trim().toLowerCase();
   if (normalized === "approved") return "Approved";
   if (normalized === "rejected") return "Rejected";
+  if (normalized === "resolved") return "Resolved";
   if (normalized === "pending" || normalized === "submitted") return "Pending";
   return "Pending";
 };
 
-const normalizeReport = (value: unknown, fallbackId: string): DetailedReport => {
-  const item = (value ?? {}) as Partial<DetailedReport>;
-  return {
-    reportId: typeof item.reportId === "string" && item.reportId.length > 0 ? item.reportId : fallbackId,
-    category: typeof item.category === "string" ? item.category : "Uncategorized",
-    issue: typeof item.issue === "string" ? item.issue : "",
-    location: typeof item.location === "string" ? item.location : null,
-    gpsLocation: typeof item.gpsLocation === "string" ? item.gpsLocation : null,
-    status: normalizeStatus(item.status),
-    waterMeter: typeof item.waterMeter === "string" ? item.waterMeter : null,
-    attachments: Array.isArray(item.attachments)
-      ? item.attachments.filter((url): url is string => typeof url === "string" && url.length > 0)
-      : [],
-  };
-};
-
-export default function ViewReportUserScreen() {
+export default function ViewAllReportsScreen() {
   const router = useRouter();
   const { reportId, userId } = useLocalSearchParams<{ reportId?: string; userId?: string }>();
   const [loading, setLoading] = useState(true);
-  const [report, setReport] = useState<DetailedReport | null>(null);
+  const [report, setReport] = useState<DetailedCommunityReport | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -67,47 +54,60 @@ export default function ViewReportUserScreen() {
 
       const selectedReportId = typeof reportId === "string" ? reportId : "";
       const selectedUserId = typeof userId === "string" ? userId : "";
-      if (!selectedReportId) {
+
+      if (!selectedReportId || !selectedUserId) {
         setReport(null);
         setLoading(false);
         return;
       }
 
       try {
-        const ownerUserId = selectedUserId || currentUser.uid;
-        const subReportRef = doc(collection(db, "regular_user", ownerUserId, "reports"), selectedReportId);
-        const subReportSnap = await getDoc(subReportRef);
-
-        if (subReportSnap.exists()) {
-          setReport(normalizeReport(subReportSnap.data(), subReportSnap.id));
-          setLoading(false);
-          return;
-        }
-
-        if (selectedUserId) {
+        const reportRef = doc(collection(db, "regular_user", selectedUserId, "reports"), selectedReportId);
+        const reportSnap = await getDoc(reportRef);
+        if (!reportSnap.exists()) {
           setReport(null);
           setLoading(false);
           return;
         }
 
-        const userDocRef = doc(db, "regular_user", currentUser.uid);
-        const userSnap = await getDoc(userDocRef);
-        if (!userSnap.exists()) {
-          setReport(null);
-          setLoading(false);
-          return;
-        }
+        const data = reportSnap.data() as Record<string, unknown>;
 
-        const legacyReports = Array.isArray(userSnap.data().reports) ? userSnap.data().reports : [];
-        const foundLegacy = legacyReports.find(
-          (item: unknown) =>
-            typeof item === "object" &&
-            item !== null &&
-            "reportId" in (item as Record<string, unknown>) &&
-            (item as Record<string, unknown>).reportId === selectedReportId
-        );
+        const userRef = doc(db, "regular_user", selectedUserId);
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.exists() ? (userSnap.data() as Record<string, unknown>) : {};
 
-        setReport(foundLegacy ? normalizeReport(foundLegacy, selectedReportId) : null);
+        const fallbackName =
+          typeof userData.fullName === "string" && userData.fullName.length > 0
+            ? userData.fullName
+            : `User ${selectedUserId.slice(0, 6)}`;
+        const fallbackAvatar =
+          typeof userData.profileImageUrl === "string" && userData.profileImageUrl.length > 0
+            ? userData.profileImageUrl
+            : null;
+
+        setReport({
+          reportId:
+            typeof data.reportId === "string" && data.reportId.length > 0
+              ? data.reportId
+              : selectedReportId,
+          reporterName:
+            typeof data.reporterName === "string" && data.reporterName.length > 0
+              ? data.reporterName
+              : fallbackName,
+          reporterAvatarUrl:
+            typeof data.reporterAvatarUrl === "string" && data.reporterAvatarUrl.length > 0
+              ? data.reporterAvatarUrl
+              : fallbackAvatar,
+          category: typeof data.category === "string" ? data.category : "Uncategorized",
+          issue: typeof data.issue === "string" ? data.issue : "",
+          location: typeof data.location === "string" ? data.location : null,
+          gpsLocation: typeof data.gpsLocation === "string" ? data.gpsLocation : null,
+          status: normalizeStatus(data.status),
+          waterMeter: typeof data.waterMeter === "string" ? data.waterMeter : null,
+          attachments: Array.isArray(data.attachments)
+            ? data.attachments.filter((url): url is string => typeof url === "string" && url.length > 0)
+            : [],
+        });
       } catch {
         setReport(null);
       } finally {
@@ -141,6 +141,10 @@ export default function ViewReportUserScreen() {
     );
   }
 
+  const avatarSource = report.reporterAvatarUrl
+    ? { uri: report.reporterAvatarUrl }
+    : require("../../../assets/images/default_account.png");
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -150,9 +154,13 @@ export default function ViewReportUserScreen() {
 
         <View style={styles.card}>
           <Text style={styles.heading}>Problem Summary</Text>
+          <Image source={avatarSource} style={styles.cornerAvatar} resizeMode="cover" />
 
           <Text style={styles.label}>Category:</Text>
           <Text style={styles.value}>{report.category}</Text>
+
+          <Text style={styles.label}>Name:</Text>
+          <Text style={styles.value}>{report.reporterName || "N/A"}</Text>
 
           <Text style={styles.label}>Location (Toledo City only):</Text>
           <Text style={styles.value}>{report.location || "N/A"}</Text>
@@ -211,6 +219,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   card: {
+    position: "relative",
     borderRadius: 12,
     backgroundColor: "#d1d5db",
     padding: 18,
@@ -219,19 +228,31 @@ const styles = StyleSheet.create({
     borderColor: "#e5e7eb",
   },
   heading: {
-    fontSize: 40,
+    fontSize: 24,
     textAlign: "center",
     color: "#111827",
     marginBottom: 18,
   },
+  cornerAvatar: {
+    position: "absolute",
+    top: 46,
+    right: 18,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2,
+    borderColor: "#94a3b8",
+    backgroundColor: "#e2e8f0",
+    overflow: "hidden",
+  },
   label: {
     color: "#111827",
-    fontSize: 26,
+    fontSize: 20,
     marginTop: 8,
   },
   value: {
     color: "#111827",
-    fontSize: 22,
+    fontSize: 16,
     marginTop: 2,
     marginBottom: 8,
   },
