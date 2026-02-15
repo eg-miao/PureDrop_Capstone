@@ -13,6 +13,71 @@ export type Attachment = {
   fileName?: string | null;
 };
 
+const TOLEDO_BARANGAYS = [
+  "Awihao",
+  "Bagakay",
+  "Bato",
+  "Biga",
+  "Bulongan",
+  "Bunga",
+  "Cabitoonan",
+  "Calongcalong",
+  "Cambang-ug",
+  "Camp 8",
+  "Canlumampao",
+  "Cantabaco",
+  "Capitan Claudio",
+  "Carmen",
+  "Daanglungsod",
+  "Don Andres Soriano (Lutopan)",
+  "Dumlog",
+  "General Climaco",
+  "Ibo",
+  "Ilihan",
+  "Juan Climaco, Sr. (formerly Malubog)",
+  "Landahan",
+  "Loay",
+  "Luray II",
+  "Magdugo",
+  "Matab-ang",
+  "Media Once",
+  "Pangamihan",
+  "Pandong Bato",
+  "Poblacion",
+  "Poog",
+  "Putingbato",
+  "Sam-ang",
+  "Sangi",
+  "Santo Niño",
+  "Subayon",
+  "Tancor",
+  "Tubod",
+] as const;
+
+const normalizeToledoAddress = (value: string): string => {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  const lower = trimmed.toLowerCase();
+  if (lower.includes("toledo city")) {
+    return trimmed;
+  }
+
+  const match = TOLEDO_BARANGAYS.find((barangay) =>
+    lower.startsWith(barangay.toLowerCase()),
+  );
+
+  if (!match) {
+    return trimmed;
+  }
+
+  const remainder = trimmed.slice(match.length).trim().replace(/^,\s*/, "");
+  return remainder ? `${match}, Toledo City ${remainder}` : `${match}, Toledo City`;
+};
+
 const reserveNextReportId = async (uid: string) => {
   const userRef = doc(db, "regular_user", uid);
 
@@ -32,8 +97,10 @@ const reserveNextReportId = async (uid: string) => {
 
   return String(nextValue);
 };
+
 export function useCreateReportForm() {
   const [category, setCategory] = useState("");
+  const [address, setAddress] = useState("");
   const [location, setLocation] = useState("");
   const [gpsLocation, setGpsLocation] = useState("");
   const [issue, setIssue] = useState("");
@@ -108,7 +175,7 @@ export function useCreateReportForm() {
       if (Platform.OS === "web") {
         const pickedLocation = await getLocationFromCoordinates(
           gpsResult.latitude,
-          gpsResult.longitude
+          gpsResult.longitude,
         );
         if (pickedLocation.isOutsideToledo) {
           Alert.alert("Outside Toledo", "Your current location does not appear to be in Toledo City.");
@@ -144,7 +211,7 @@ export function useCreateReportForm() {
       setGpsLoading(true);
       const pickedLocation = await getLocationFromCoordinates(
         selectedPin.latitude,
-        selectedPin.longitude
+        selectedPin.longitude,
       );
       if (pickedLocation.isOutsideToledo) {
         Alert.alert("Outside Toledo", "The selected location does not appear to be in Toledo City.");
@@ -197,13 +264,26 @@ export function useCreateReportForm() {
 
   const handleSubmit = async () => {
     const trimmedCategory = category.trim();
-    const trimmedIssue = issue.trim();
+    const trimmedAddress = normalizeToledoAddress(address);
     const trimmedLocation = location.trim();
+    const trimmedIssue = issue.trim();
     const trimmedGpsLocation = gpsLocation.trim();
     const trimmedWaterMeter = waterMeter.trim();
+    const combinedLocation = [trimmedAddress, trimmedLocation].filter(Boolean).join(" ");
 
-    if (!trimmedCategory || !trimmedIssue || (!trimmedLocation && !trimmedGpsLocation)) {
-      Alert.alert("Missing fields", "Please fill category, issue details, and either location or GPS.");
+    if (trimmedWaterMeter.length > 0) {
+      const waterMeterNumber = Number(trimmedWaterMeter);
+      if (Number.isNaN(waterMeterNumber) || waterMeterNumber < 0) {
+        Alert.alert("Invalid water meter", "Water meter must be a valid non-negative number.");
+        return false;
+      }
+    }
+
+    if (!trimmedCategory || !trimmedIssue || (!combinedLocation && !trimmedGpsLocation)) {
+      Alert.alert(
+        "Missing fields",
+        "Please fill category, issue details, and either address/location or GPS.",
+      );
       return false;
     }
 
@@ -221,7 +301,6 @@ export function useCreateReportForm() {
       for (let i = 0; i < attachments.length; i += 1) {
         const attachment = attachments[i];
         const extension = getFileExtension(attachment);
-        // Bucket is already "reports"; do not prefix object path with "reports/" again.
         const destinationPath = `${currentUser.uid}/${reportId}-${i}.${extension}`;
 
         const uploaded = await uploadFile(attachment.uri, destinationPath, {
@@ -263,7 +342,9 @@ export function useCreateReportForm() {
           typeof userData.profileImageUrl === "string" ? userData.profileImageUrl : null,
         category: trimmedCategory,
         issue: trimmedIssue,
-        location: trimmedLocation || null,
+        address: trimmedAddress || null,
+        locationDetails: trimmedLocation || null,
+        location: combinedLocation || null,
         gpsLocation: trimmedGpsLocation || null,
         waterMeter: trimmedWaterMeter || null,
         attachments: uploadedUrls,
@@ -278,6 +359,7 @@ export function useCreateReportForm() {
       });
 
       setCategory("");
+      setAddress("");
       setLocation("");
       setGpsLocation("");
       setIssue("");
@@ -296,6 +378,7 @@ export function useCreateReportForm() {
   };
 
   return {
+    address,
     attachments,
     category,
     gpsLoading,
@@ -311,6 +394,7 @@ export function useCreateReportForm() {
     mapRegion,
     mapVisible,
     selectedPin,
+    setAddress,
     setCategory,
     setIssue,
     setLocation,
@@ -320,6 +404,3 @@ export function useCreateReportForm() {
     waterMeter,
   };
 }
-
-
-

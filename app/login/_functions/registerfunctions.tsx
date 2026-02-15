@@ -8,8 +8,24 @@ interface RegisterParams {
   email: string;
   password: string;
   confirmPassword: string;
-  waterMeter: number; // ✅ new field
+  waterMeter: number;
 }
+
+const CITY_SUFFIX = ", Toledo City";
+
+const normalizeAddress = (value: string): string => {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  if (trimmed.toLowerCase().endsWith(CITY_SUFFIX.toLowerCase())) {
+    return trimmed;
+  }
+
+  return `${trimmed}${CITY_SUFFIX}`;
+};
 
 export async function registerUser({
   fullName,
@@ -19,7 +35,9 @@ export async function registerUser({
   confirmPassword,
   waterMeter,
 }: RegisterParams) {
-  if (!fullName || !address || !email || !password) {
+  const formattedAddress = normalizeAddress(address);
+
+  if (!fullName || !formattedAddress || !email || !password) {
     throw new Error("All fields are required");
   }
 
@@ -31,23 +49,21 @@ export async function registerUser({
     throw new Error("Water meter must be non-negative");
   }
 
-  // 1️⃣ Create Auth account
   const userCredential = await createUserWithEmailAndPassword(
     auth,
     email,
-    password
+    password,
   );
 
   const user = userCredential.user;
 
-  // 2️⃣ Save profile to Firestore (with waterMeter)
   await setDoc(doc(db, "regular_user", user.uid), {
     uid: user.uid,
     fullName,
-    address,
+    address: formattedAddress,
     email,
     role: "regular_user",
-    waterMeter,          // ✅ store input value
+    waterMeter,
     createdAt: serverTimestamp(),
   });
 

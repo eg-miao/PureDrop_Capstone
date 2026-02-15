@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback, useState } from "react";
 import {
   Alert,
   Image,
@@ -9,6 +10,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  getSelectedAddress,
+  setSelectedAddress,
+} from "./_addressSelectionStore";
 import { registerUser } from "./_functions/registerfunctions";
 
 export default function RegisterScreen() {
@@ -19,14 +24,31 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [waterMeter, setWaterMeter] = useState<string>("0"); // ✅ new input
+  const [waterMeter, setWaterMeter] = useState<string>("0");
   const [loading, setLoading] = useState<boolean>(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      const pickedAddress = getSelectedAddress();
+
+      if (pickedAddress) {
+        setAddress(pickedAddress);
+      }
+    }, []),
+  );
+
+  const openAddressSelector = (): void => {
+    setSelectedAddress(address);
+    router.push({
+      pathname: "/login/address_select",
+      params: { currentAddress: address },
+    });
+  };
 
   const handleRegister = async (): Promise<void> => {
     try {
       setLoading(true);
 
-      // Parse waterMeter as number
       const waterMeterValue = parseFloat(waterMeter);
       if (isNaN(waterMeterValue) || waterMeterValue < 0) {
         throw new Error("Water meter must be a valid non-negative number");
@@ -42,7 +64,7 @@ export default function RegisterScreen() {
       });
 
       Alert.alert("Success", "Account created successfully");
-      router.replace("/login/login"); // or "/regular_user/home"
+      router.replace("/login/login");
     } catch (err: unknown) {
       let message = "Something went wrong";
 
@@ -58,14 +80,12 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <Image
         source={require("../../assets/images/logo.png")}
         style={styles.logo}
         resizeMode="contain"
       />
 
-      {/* Form */}
       <View style={styles.form}>
         <Text style={styles.label}>Full Name (eg. Juan Dela Cruz)</Text>
         <TextInput
@@ -75,11 +95,15 @@ export default function RegisterScreen() {
         />
 
         <Text style={styles.label}>Address</Text>
-        <TextInput
+        <TouchableOpacity
           style={styles.input}
-          value={address}
-          onChangeText={setAddress}
-        />
+          activeOpacity={0.8}
+          onPress={openAddressSelector}
+        >
+          <Text style={address ? styles.inputText : styles.placeholderText}>
+            {address || "Select your barangay"}
+          </Text>
+        </TouchableOpacity>
 
         <Text style={styles.label}>Email</Text>
         <TextInput
@@ -106,8 +130,7 @@ export default function RegisterScreen() {
           secureTextEntry
         />
 
-        {/* ✅ Water Meter Input */}
-        <Text style={styles.label}>Water Meter (m³)</Text>
+        <Text style={styles.label}>Water Meter (m�)</Text>
         <TextInput
           style={styles.input}
           value={waterMeter}
@@ -116,7 +139,6 @@ export default function RegisterScreen() {
         />
       </View>
 
-      {/* Register Button */}
       <TouchableOpacity
         style={styles.button}
         onPress={handleRegister}
@@ -127,7 +149,6 @@ export default function RegisterScreen() {
         </Text>
       </TouchableOpacity>
 
-      {/* Footer */}
       <Text style={styles.footer}>Register your Account</Text>
     </View>
   );
@@ -167,6 +188,15 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     paddingHorizontal: 16,
     marginBottom: 14,
+    justifyContent: "center",
+  },
+
+  inputText: {
+    color: "#000",
+  },
+
+  placeholderText: {
+    color: "#6D7D8A",
   },
 
   button: {

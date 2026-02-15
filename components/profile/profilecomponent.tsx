@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import {
   ActivityIndicator,
   Image,
@@ -39,9 +38,9 @@ export default function ProfileComponent({
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={onBack}>
+      {/* <TouchableOpacity style={styles.backButton} onPress={onBack}>
         <Ionicons name="arrow-back" size={26} color="#ffffff" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <View style={styles.card}>
         <Text style={styles.title}>Profile</Text>

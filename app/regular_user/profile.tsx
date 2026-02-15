@@ -2,7 +2,14 @@ import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { auth, db } from "../../firebaseConfig";
 
 export default function ProfileScreen() {
@@ -36,12 +43,12 @@ export default function ProfileScreen() {
           setProfileImageUrl(
             typeof data.profileImageUrl === "string" && data.profileImageUrl.length > 0
               ? data.profileImageUrl
-              : null
+              : null,
           );
         },
         () => {
           setProfileImageUrl(null);
-        }
+        },
       );
     });
 
@@ -59,32 +66,34 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.avatarWrap}>
-        <Image
-          source={avatarSource}
-          style={styles.avatar}
-        />
-      </View>
+      <View style={styles.animatedScreen}>
+        <View style={styles.avatarWrap}>
+          <Image
+            source={avatarSource}
+            style={styles.avatar}
+          />
+        </View>
 
-      <View style={styles.buttonStack}>
-        <TouchableOpacity style={styles.actionButton} 
-        onPress={() => router.push("/regular_user/profile/profileview")}>
-          <Text style={styles.actionText}>Profile</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonStack}>
+          <TouchableOpacity style={styles.actionButton}
+          onPress={() => router.push("/regular_user/profile/profileview")}>
+            <Text style={styles.actionText}>Profile</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => router.push("/regular_user/about")}
-        >
-          <Text style={styles.actionText}>About</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push("/regular_user/about")}
+          >
+            <Text style={styles.actionText}>About</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => router.push("/regular_user/signout/signout_modal")}
-        >
-          <Text style={styles.actionText}>Logout</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push("/regular_user/signout/signout_modal")}
+          >
+            <Text style={styles.actionText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -97,6 +106,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+  animatedScreen: {
+    flex: 1,
+    width: "100%",
+  },
+
   avatarWrap: {
     marginTop: 40,
     marginBottom: 30,
@@ -106,6 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#bfe0ff",
     justifyContent: "center",
     alignItems: "center",
+    alignSelf: "center",
   },
 
   avatar: {

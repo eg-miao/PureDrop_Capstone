@@ -19,10 +19,8 @@ export default function MainPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen to auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        // Fetch Firestore user profile
         const userDocRef = doc(db, "regular_user", currentUser.uid);
         const userSnap = await getDoc(userDocRef);
 
@@ -32,15 +30,13 @@ export default function MainPage() {
           console.warn("User profile not found in Firestore");
         }
       } else {
-        // Redirect to login if no user
         router.replace("/login/login");
       }
       setLoading(false);
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -57,7 +53,6 @@ export default function MainPage() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* HEADER */}
       <View style={styles.header}>
         <Image
           source={require("../../assets/images/logo.png")}
@@ -65,13 +60,12 @@ export default function MainPage() {
         />
 
         <Text style={styles.tagline}>
-          “Report water problems in your community easily”
+          Report water problems in your community easily
         </Text>
 
         {user && <Text style={styles.title}>Hello, {user.fullName || "User"}</Text>}
       </View>
 
-      {/* BUTTON GRID */}
       <View style={styles.grid}>
         <TouchableOpacity
           style={styles.card}

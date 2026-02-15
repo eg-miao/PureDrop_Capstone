@@ -71,6 +71,24 @@ export const styles = StyleSheet.create({
     color: "#0f172a",
   },
 
+  addressPickerTrigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  addressPickerValue: {
+    color: "#0f172a",
+    flex: 1,
+    marginRight: 8,
+  },
+
+  addressPickerPlaceholder: {
+    color: "#7da8d8",
+    flex: 1,
+    marginRight: 8,
+  },
+
   gpsInput: {
     opacity: 0.85,
     marginBottom: 8,

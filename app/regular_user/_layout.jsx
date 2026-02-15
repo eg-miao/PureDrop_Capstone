@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Image, StyleSheet, View } from "react-native";
 import { auth, db } from "../../firebaseConfig";
 
@@ -10,6 +10,7 @@ export default function RegularUserLayout() {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState(null);
+  const redirectingRef = useRef(false);
 
   useEffect(() => {
     let unsubscribeProfile = null;
@@ -22,8 +23,12 @@ export default function RegularUserLayout() {
 
       if (!currentUser) {
         setProfileImageUrl(null);
-        router.replace("/login/login");
+        if (!redirectingRef.current) {
+          redirectingRef.current = true;
+          router.replace("/login/login");
+        }
       } else {
+        redirectingRef.current = false;
         const userRef = doc(db, "regular_user", currentUser.uid);
         unsubscribeProfile = onSnapshot(
           userRef,
@@ -54,7 +59,7 @@ export default function RegularUserLayout() {
         unsubscribeProfile();
       }
     };
-  }, [router]);
+  }, []);
 
   const tabAvatarSource = profileImageUrl
     ? { uri: profileImageUrl }
@@ -75,12 +80,14 @@ export default function RegularUserLayout() {
         tabBarShowLabel: false,
         tabBarStyle: styles.tabBar,
         tabBarItemStyle: styles.tabItem,
+        lazy: false,
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
-          tabBarIcon: ({ focused }) => (
+          href: "/regular_user/home",
+          tabBarIcon: () => (
             <Ionicons
               name="home-outline"
               size={26}
@@ -93,7 +100,8 @@ export default function RegularUserLayout() {
       <Tabs.Screen
         name="notifications"
         options={{
-          tabBarIcon: ({ focused }) => (
+          href: "/regular_user/notifications",
+          tabBarIcon: () => (
             <Ionicons
               name="notifications-outline"
               size={26}
@@ -106,6 +114,7 @@ export default function RegularUserLayout() {
       <Tabs.Screen
         name="profile"
         options={{
+          href: "/regular_user/profile",
           tabBarIcon: () => (
             <Image
               source={tabAvatarSource}
@@ -121,6 +130,7 @@ export default function RegularUserLayout() {
         name="create_report/submitted"
         options={{ href: null, tabBarStyle: { display: "none" } }}
       />
+      <Tabs.Screen name="notifications/notification_main" options={{ href: null }} />
       <Tabs.Screen name="view-reports" options={{ href: null }} />
       <Tabs.Screen name="create_report/createreport" options={{ href: null }} />
       <Tabs.Screen name="profile/profileview" options={{ href: null }} />
@@ -170,3 +180,5 @@ const styles = StyleSheet.create({
     backgroundColor: "#e0f2fe",
   },
 });
+
+
