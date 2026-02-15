@@ -1,0 +1,26 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /regular_user/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Allow profile creation by the authenticated owner.
+      allow create: if request.auth != null && request.auth.uid == userId;
+
+      // Allow owner updates, including create_report writes.
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && isValidUserUpdate();
+    }
+
+    match /regular_user/{userId}/reports/{reportId} {
+      allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    function isValidUserUpdate() {
+      // Prevent privilege escalation.
+      return !('role' in request.resource.data) || request.resource.data.role == resource.data.role;
+    }
+  }
+}

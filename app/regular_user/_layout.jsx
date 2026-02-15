@@ -77,8 +77,15 @@ export default function RegularUserLayout() {
 
       {/* Hidden routes (still navigable) */}
       <Tabs.Screen name="report" options={{ href: null }} />
+      <Tabs.Screen
+        name="create_report/submitted"
+        options={{ href: null, tabBarStyle: { display: "none" } }}
+      />
       <Tabs.Screen name="view-reports" options={{ href: null }} />
+      <Tabs.Screen name="create_report/createreport" options={{ href: null }} />
+      <Tabs.Screen name="profile/profileview" options={{ href: null }} />
       <Tabs.Screen name="reports-list" options={{ href: null }} />
+      <Tabs.Screen name="view_reportuser" options={{ href: null, tabBarStyle: { display: "none" } }} />
       <Tabs.Screen name="directory" options={{ href: null }} />
       <Tabs.Screen name="about" options={{ href: null }} />
       <Tabs.Screen

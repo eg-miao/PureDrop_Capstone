@@ -8,13 +8,14 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.avatarWrap}>
         <Image
-          source={require("../../assets/images/icon.png")}
+          source={require("../../assets/images/default_account.png")}
           style={styles.avatar}
         />
       </View>
 
       <View style={styles.buttonStack}>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton} 
+        onPress={() => router.push("/regular_user/profile/profileview")}>
           <Text style={styles.actionText}>Profile</Text>
         </TouchableOpacity>
 

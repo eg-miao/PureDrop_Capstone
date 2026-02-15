@@ -89,7 +89,7 @@ export default function MainPage() {
 
         <TouchableOpacity
           style={styles.card}
-          onPress={() => router.push("/regular_user/reports-list")}
+          onPress={() => router.push("/regular_usser/all-users")}
         >
           <Text style={styles.cardText}>Reports List</Text>
         </TouchableOpacity>
