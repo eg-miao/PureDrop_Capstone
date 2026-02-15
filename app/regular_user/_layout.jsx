@@ -1,24 +1,64 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
+import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, StyleSheet, View } from "react-native";
-import { auth } from "../../firebaseConfig";
+import { auth, db } from "../../firebaseConfig";
 
 export default function RegularUserLayout() {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
 
   useEffect(() => {
+    let unsubscribeProfile = null;
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+
       if (!currentUser) {
+        setProfileImageUrl(null);
         router.replace("/login/login");
+      } else {
+        const userRef = doc(db, "regular_user", currentUser.uid);
+        unsubscribeProfile = onSnapshot(
+          userRef,
+          (snap) => {
+            if (!snap.exists()) {
+              setProfileImageUrl(null);
+              return;
+            }
+
+            const data = snap.data();
+            setProfileImageUrl(
+              typeof data.profileImageUrl === "string" && data.profileImageUrl.length > 0
+                ? data.profileImageUrl
+                : null
+            );
+          },
+          () => {
+            setProfileImageUrl(null);
+          }
+        );
       }
       setAuthChecked(true);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+      }
+    };
   }, [router]);
+
+  const tabAvatarSource = profileImageUrl
+    ? { uri: profileImageUrl }
+    : require("../../assets/images/default_account.png");
 
   if (!authChecked) {
     return (
@@ -68,7 +108,7 @@ export default function RegularUserLayout() {
         options={{
           tabBarIcon: () => (
             <Image
-              source={require("../../assets/images/icon.png")}
+              source={tabAvatarSource}
               style={styles.avatar}
             />
           ),

@@ -13,21 +13,30 @@ export interface ProfileViewModel {
   fullName: string;
   address: string;
   email: string;
+  profileImageUrl?: string | null;
 }
 
 interface ProfileComponentProps {
   profile: ProfileViewModel | null;
   loading: boolean;
+  uploadingAvatar: boolean;
   error: string | null;
+  onChangeAvatar: () => void;
   onBack: () => void;
 }
 
 export default function ProfileComponent({
   profile,
   loading,
+  uploadingAvatar,
   error,
+  onChangeAvatar,
   onBack,
 }: ProfileComponentProps) {
+  const avatarSource = profile?.profileImageUrl
+    ? { uri: profile.profileImageUrl }
+    : require("../../assets/images/default_account.png");
+
   return (
     <SafeAreaView style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={onBack}>
@@ -39,7 +48,7 @@ export default function ProfileComponent({
 
         <View style={styles.avatarWrap}>
           <Image
-            source={require("../../assets/images/default_account.png")}
+            source={avatarSource}
             style={styles.avatar}
           />
         </View>
@@ -51,6 +60,17 @@ export default function ProfileComponent({
             <Text style={styles.nameText}>{profile?.fullName || "User"}</Text>
 
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+            <TouchableOpacity
+              style={[styles.changePhotoButton, uploadingAvatar && styles.changePhotoButtonDisabled]}
+              onPress={onChangeAvatar}
+              disabled={uploadingAvatar}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.changePhotoText}>
+                {uploadingAvatar ? "Uploading photo..." : "Change Profile Picture"}
+              </Text>
+            </TouchableOpacity>
 
             <View style={styles.fieldGroup}>
               <Text style={styles.fieldLabel}>ADDRESS:</Text>
@@ -138,6 +158,21 @@ const styles = StyleSheet.create({
     color: "#a11b1b",
     marginBottom: 10,
     textAlign: "center",
+  },
+  changePhotoButton: {
+    backgroundColor: "#1e88e5",
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginBottom: 16,
+  },
+  changePhotoButtonDisabled: {
+    opacity: 0.7,
+  },
+  changePhotoText: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "600",
   },
   fieldGroup: {
     width: "100%",

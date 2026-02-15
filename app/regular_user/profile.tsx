@@ -1,14 +1,67 @@
 import { useRouter } from "expo-router";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { auth, db } from "../../firebaseConfig";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let unsubscribeProfile: (() => void) | null = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+
+      if (!currentUser) {
+        setProfileImageUrl(null);
+        return;
+      }
+
+      const userRef = doc(db, "regular_user", currentUser.uid);
+      unsubscribeProfile = onSnapshot(
+        userRef,
+        (snap) => {
+          if (!snap.exists()) {
+            setProfileImageUrl(null);
+            return;
+          }
+
+          const data = snap.data() as { profileImageUrl?: unknown };
+          setProfileImageUrl(
+            typeof data.profileImageUrl === "string" && data.profileImageUrl.length > 0
+              ? data.profileImageUrl
+              : null
+          );
+        },
+        () => {
+          setProfileImageUrl(null);
+        }
+      );
+    });
+
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+      }
+    };
+  }, []);
+
+  const avatarSource = profileImageUrl
+    ? { uri: profileImageUrl }
+    : require("../../assets/images/default_account.png");
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.avatarWrap}>
         <Image
-          source={require("../../assets/images/default_account.png")}
+          source={avatarSource}
           style={styles.avatar}
         />
       </View>
