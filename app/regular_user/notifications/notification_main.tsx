@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -36,7 +37,13 @@ const renderItem = ({ item }: { item: NotificationItem }) => (
 
 export default function NotificationScreen() {
   const router = useRouter();
-  const { items, loading, unreadCount } = useReportNotifications();
+  const { items, loading, markAllAsRead } = useReportNotifications();
+
+  useFocusEffect(
+    useCallback(() => {
+      markAllAsRead();
+    }, [markAllAsRead]),
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -47,9 +54,7 @@ export default function NotificationScreen() {
           </TouchableOpacity>
 
           <Text style={styles.title}>Notifications</Text>
-          <View style={styles.badgeWrap}>
-            {unreadCount > 0 ? <Text style={styles.badge}>{unreadCount}</Text> : null}
-          </View>
+          <View style={styles.badgeWrap} />
         </View>
 
         {loading ? (
@@ -106,17 +111,6 @@ const styles = StyleSheet.create({
   badgeWrap: {
     width: 34,
     alignItems: "flex-end",
-  },
-  badge: {
-    minWidth: 22,
-    textAlign: "center",
-    color: "#ffffff",
-    backgroundColor: "#ef4444",
-    fontWeight: "700",
-    borderRadius: 11,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    overflow: "hidden",
   },
   listContent: {
     paddingHorizontal: 16,

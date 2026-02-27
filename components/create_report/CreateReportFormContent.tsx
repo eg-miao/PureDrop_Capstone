@@ -7,6 +7,7 @@ import type { Attachment } from "./useCreateReportForm";
 
 type CreateReportFormContentProps = {
   address: string;
+  aiCategorizing: boolean;
   attachments: Attachment[];
   category: string;
   gpsLoading: boolean;
@@ -16,6 +17,7 @@ type CreateReportFormContentProps = {
   submitLoading: boolean;
   waterMeter: string;
   onAddressChange: (value: string) => void;
+  onAutoCategorizeIssue: () => void;
   onCategoryChange: (value: string) => void;
   onIssueChange: (value: string) => void;
   onLocationChange: (value: string) => void;
@@ -30,6 +32,7 @@ const CATEGORY_OPTIONS = ["No water", "Dirty water", "Water leaking"];
 
 export function CreateReportFormContent({
   address,
+  aiCategorizing,
   attachments,
   category,
   gpsLoading,
@@ -39,6 +42,7 @@ export function CreateReportFormContent({
   submitLoading,
   waterMeter,
   onAddressChange,
+  onAutoCategorizeIssue,
   onCategoryChange,
   onIssueChange,
   onLocationChange,
@@ -152,7 +156,20 @@ export function CreateReportFormContent({
           keyboardType="numeric"
         />
 
-        <Text style={[styles.label, styles.issueLabel]}>Describe an Issue</Text>
+        <View style={styles.issueHeaderRow}>
+          <Text style={[styles.label, styles.issueLabel]}>Describe an Issue</Text>
+          <TouchableOpacity
+            style={[styles.autoCategoryButton, aiCategorizing && styles.featureButtonLoading]}
+            onPress={onAutoCategorizeIssue}
+            disabled={aiCategorizing || submitLoading}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="sparkles-outline" size={14} color="#0f172a" />
+            <Text style={styles.autoCategoryButtonText}>
+              {aiCategorizing ? "Analyzing..." : "AI Category"}
+            </Text>
+          </TouchableOpacity>
+        </View>
         <TextInput
           value={issue}
           onChangeText={onIssueChange}

@@ -1,14 +1,15 @@
 import { onAuthStateChanged } from "firebase/auth";
 import {
   collection,
+  doc,
   onSnapshot,
-  orderBy,
-  query,
+  serverTimestamp,
+  updateDoc,
   type DocumentData,
   type QueryDocumentSnapshot,
   type Timestamp,
 } from "firebase/firestore";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { auth, db } from "../../firebaseConfig";
 
 export type NotificationItem = {
@@ -17,6 +18,7 @@ export type NotificationItem = {
   status: string;
   message: string;
   createdLabel: string;
+  createdAtMs: number;
 };
 
 const normalizeStatus = (value: unknown): string => {
@@ -50,6 +52,25 @@ const formatTimestampLabel = (value: unknown): string => {
   return "Date unavailable";
 };
 
+const resolveTimestampMs = (value: unknown): number => {
+  if (typeof value === "string") {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.getTime();
+    }
+  }
+
+  const maybeTimestamp = value as Timestamp | undefined;
+  if (maybeTimestamp && typeof maybeTimestamp.toDate === "function") {
+    const ms = maybeTimestamp.toDate().getTime();
+    if (!Number.isNaN(ms)) {
+      return ms;
+    }
+  }
+
+  return 0;
+};
+
 const buildMessage = (status: string, reportId: string) => {
   if (status === "Approved") {
     return `Your report #${reportId} has been approved.`;
@@ -70,6 +91,27 @@ const buildMessage = (status: string, reportId: string) => {
   return `Your report #${reportId} is still pending.`;
 };
 
+const NOTIFICATION_TIME_FIELDS = [
+  "statusUpdatedAt",
+  "reviewedAt",
+  "resolvedAt",
+  "updatedAt",
+  "lastUpdatedAt",
+  "submittedAt",
+  "createdAt",
+] as const;
+
+const resolveNotificationTime = (data: DocumentData): unknown => {
+  for (const field of NOTIFICATION_TIME_FIELDS) {
+    const value = data[field];
+    if (resolveTimestampMs(value) > 0) {
+      return value;
+    }
+  }
+
+  return undefined;
+};
+
 const mapReportToNotification = (
   snap: QueryDocumentSnapshot<DocumentData>,
 ): NotificationItem => {
@@ -79,51 +121,110 @@ const mapReportToNotification = (
       ? data.reportId
       : snap.id;
   const status = normalizeStatus(data.status);
+  const notificationTime = resolveNotificationTime(data);
 
   return {
     id: snap.id,
     reportId,
     status,
     message: buildMessage(status, reportId),
-    createdLabel: formatTimestampLabel(data.submittedAt ?? data.createdAt),
+    createdLabel: formatTimestampLabel(notificationTime),
+    createdAtMs: resolveTimestampMs(notificationTime),
   };
 };
 
 export function useReportNotifications() {
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [lastSeenMs, setLastSeenMs] = useState<number>(0);
+  const currentUidRef = useRef<string | null>(null);
+  const lastSeenMsRef = useRef<number>(0);
+
+  const setLastSeenMsSafe = useCallback((value: number) => {
+    lastSeenMsRef.current = value;
+    setLastSeenMs((prev) => (prev === value ? prev : value));
+  }, []);
 
   useEffect(() => {
     let unsubscribeReports: (() => void) | null = null;
+    let unsubscribeUser: (() => void) | null = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (unsubscribeReports) {
         unsubscribeReports();
         unsubscribeReports = null;
       }
+      if (unsubscribeUser) {
+        unsubscribeUser();
+        unsubscribeUser = null;
+      }
 
       if (!currentUser) {
+        currentUidRef.current = null;
         setItems([]);
+        setLastSeenMsSafe(0);
         setLoading(false);
         return;
       }
 
+      currentUidRef.current = currentUser.uid;
       setLoading(true);
 
+      const userRef = doc(db, "regular_user", currentUser.uid);
+      unsubscribeUser = onSnapshot(
+        userRef,
+        (userSnap) => {
+          if (!userSnap.exists()) {
+            setLastSeenMsSafe(0);
+            return;
+          }
+
+          const userData = userSnap.data() as { notificationsLastSeenAt?: unknown };
+          setLastSeenMsSafe(resolveTimestampMs(userData.notificationsLastSeenAt));
+        },
+        () => {
+          setLastSeenMsSafe(0);
+        },
+      );
+
       const reportsRef = collection(db, "regular_user", currentUser.uid, "reports");
-      const reportsQuery = query(reportsRef, orderBy("createdAt", "desc"));
 
       unsubscribeReports = onSnapshot(
-        reportsQuery,
+        reportsRef,
         (snap) => {
-          setItems(snap.docs.map(mapReportToNotification));
+          const mapped = snap.docs
+            .map(mapReportToNotification)
+            .sort((a, b) => b.createdAtMs - a.createdAtMs);
+
+          setItems((prev) => {
+            if (prev.length !== mapped.length) {
+              return mapped;
+            }
+
+            for (let i = 0; i < prev.length; i += 1) {
+              const a = prev[i];
+              const b = mapped[i];
+              if (
+                a.id !== b.id ||
+                a.reportId !== b.reportId ||
+                a.status !== b.status ||
+                a.message !== b.message ||
+                a.createdLabel !== b.createdLabel ||
+                a.createdAtMs !== b.createdAtMs
+              ) {
+                return mapped;
+              }
+            }
+
+            return prev;
+          });
           setLoading(false);
         },
         () => {
-          setItems([]);
           setLoading(false);
         },
       );
+
     });
 
     return () => {
@@ -131,17 +232,42 @@ export function useReportNotifications() {
       if (unsubscribeReports) {
         unsubscribeReports();
       }
+      if (unsubscribeUser) {
+        unsubscribeUser();
+      }
     };
-  }, []);
+  }, [setLastSeenMsSafe]);
 
-  const unreadCount = useMemo(
-    () => items.filter((item) => item.status !== "Pending").length,
-    [items],
-  );
+  const unreadCount = useMemo(() => {
+    if (lastSeenMs <= 0) {
+      return items.length;
+    }
+    return items.filter((item) => item.createdAtMs > lastSeenMs).length;
+  }, [items, lastSeenMs]);
+
+  const markAllAsRead = useCallback(async () => {
+    const uid = currentUidRef.current;
+    if (!uid) {
+      return;
+    }
+
+    const optimisticLastSeenMs = Date.now();
+    const previousLastSeenMs = lastSeenMsRef.current;
+    setLastSeenMsSafe(optimisticLastSeenMs);
+    try {
+      const userRef = doc(db, "regular_user", uid);
+      await updateDoc(userRef, {
+        notificationsLastSeenAt: serverTimestamp(),
+      });
+    } catch {
+      setLastSeenMsSafe(previousLastSeenMs);
+    }
+  }, [setLastSeenMsSafe]);
 
   return {
     items,
     loading,
     unreadCount,
+    markAllAsRead,
   };
 }

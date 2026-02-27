@@ -172,7 +172,23 @@ export default function ViewReportUserScreen() {
           ) : (
             <View style={styles.attachmentRow}>
               {report.attachments.map((uri, index) => (
-                <Image key={`${uri}-${index}`} source={{ uri }} style={styles.attachmentImage} />
+                <TouchableOpacity
+                  key={`${uri}-${index}`}
+                  activeOpacity={0.86}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/regular_user/attachment_lightbox_user",
+                      params: {
+                        uri,
+                        reportId: report.reportId,
+                        userId: typeof userId === "string" ? userId : "",
+                        index: String(index + 1),
+                      },
+                    })
+                  }
+                >
+                  <Image source={{ uri }} style={styles.attachmentImage} />
+                </TouchableOpacity>
               ))}
             </View>
           )}

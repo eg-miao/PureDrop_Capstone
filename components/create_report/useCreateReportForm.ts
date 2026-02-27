@@ -1,8 +1,10 @@
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system/legacy";
 import { useState } from "react";
 import { Alert, Platform } from "react-native";
 import { collection, doc, getDoc, runTransaction, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { getPublicFileUrl, uploadFile } from "../../api/storage";
+import { autoCategorizeIssue } from "../../app/regular_user/assistant/assistant_api";
 import { getCurrentGpsLocation, getLocationFromCoordinates } from "../../app/regular_user/create_report/creategps";
 import { auth, db } from "../../firebaseConfig";
 import type { Coordinate, Region } from "./MapPicker";
@@ -11,6 +13,7 @@ export type Attachment = {
   uri: string;
   mimeType?: string | null;
   fileName?: string | null;
+  base64?: string | null;
 };
 
 const TOLEDO_BARANGAYS = [
@@ -48,11 +51,14 @@ const TOLEDO_BARANGAYS = [
   "Putingbato",
   "Sam-ang",
   "Sangi",
-  "Santo Niño",
+  "Santo NiÃ±o",
   "Subayon",
   "Tancor",
   "Tubod",
 ] as const;
+
+const LOCAL_ATTACHMENT_URI_PATTERN = /^(file|content|ph|assets-library):/i;
+const REPORT_ATTACHMENT_CACHE_DIR = "report-attachments";
 
 const normalizeToledoAddress = (value: string): string => {
   const trimmed = value.trim();
@@ -107,6 +113,7 @@ export function useCreateReportForm() {
   const [waterMeter, setWaterMeter] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [gpsLoading, setGpsLoading] = useState(false);
+  const [aiCategorizing, setAiCategorizing] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [mapVisible, setMapVisible] = useState(false);
   const [mapRegion, setMapRegion] = useState<Region>({
@@ -148,6 +155,66 @@ export function useCreateReportForm() {
     }
   };
 
+  const isLocalAttachmentUri = (uri: string) => LOCAL_ATTACHMENT_URI_PATTERN.test(uri);
+
+  const isCachedAttachmentUri = (uri: string) =>
+    typeof FileSystem.cacheDirectory === "string" &&
+    uri.startsWith(`${FileSystem.cacheDirectory}${REPORT_ATTACHMENT_CACHE_DIR}/`);
+
+  const ensureAttachmentBase64 = async (uri: string, base64?: string | null) => {
+    if (base64 && base64.length > 0) {
+      return base64;
+    }
+
+    return FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+  };
+
+  const createStableAttachment = async (picked: ImagePicker.ImagePickerAsset): Promise<Attachment> => {
+    let stableUri = picked.uri;
+    const extension = getFileExtension({
+      uri: picked.uri,
+      mimeType: picked.mimeType,
+      fileName: picked.fileName,
+    });
+
+    if (isLocalAttachmentUri(picked.uri) && FileSystem.cacheDirectory) {
+      const cacheDir = `${FileSystem.cacheDirectory}${REPORT_ATTACHMENT_CACHE_DIR}`;
+      const cacheUri = `${cacheDir}/attachment-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2)}.${extension}`;
+
+      await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
+      await FileSystem.copyAsync({ from: picked.uri, to: cacheUri });
+      stableUri = cacheUri;
+    }
+
+    const base64 = await ensureAttachmentBase64(stableUri, picked.base64);
+
+    return {
+      uri: stableUri,
+      mimeType: picked.mimeType,
+      fileName: picked.fileName,
+      base64,
+    };
+  };
+
+  const cleanupCachedAttachments = async (list: Attachment[]) => {
+    await Promise.all(
+      list.map(async (attachment) => {
+        if (!isCachedAttachmentUri(attachment.uri)) {
+          return;
+        }
+
+        try {
+          await FileSystem.deleteAsync(attachment.uri, { idempotent: true });
+        } catch {
+          // Cache cleanup failure should not block user flow.
+        }
+      }),
+    );
+  };
   const resolveUploadedFileUrl = (uploadedPath: string, fallbackPath: string) => {
     const resolved = getPublicFileUrl(uploadedPath || fallbackPath);
     if (!resolved || typeof resolved !== "string") {
@@ -243,23 +310,70 @@ export function useCreateReportForm() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
       allowsMultipleSelection: false,
+      base64: true,
     });
 
     if (!result.canceled && result.assets.length > 0) {
-      const picked = result.assets[0];
-      setAttachments((prev) => [
-        ...prev,
-        {
-          uri: picked.uri,
-          mimeType: picked.mimeType,
-          fileName: picked.fileName,
-        },
-      ]);
+      try {
+        const picked = result.assets[0];
+        const stableAttachment = await createStableAttachment(picked);
+
+        setAttachments((prev) => [...prev, stableAttachment]);
+      } catch {
+        Alert.alert(
+          "Attachment error",
+          "Unable to process the selected image. Please pick another image and try again.",
+        );
+      }
     }
   };
 
   const handleRemoveAttachment = (index: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
+    setAttachments((prev) => {
+      const removed = prev[index];
+      if (removed && isCachedAttachmentUri(removed.uri)) {
+        void FileSystem.deleteAsync(removed.uri, { idempotent: true }).catch(() => {
+          // Cache cleanup failure should not block user flow.
+        });
+      }
+
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const handleAutoCategorizeIssue = async () => {
+    const trimmedIssue = issue.trim();
+    if (!trimmedIssue) {
+      Alert.alert("Missing issue details", "Please describe the issue first.");
+      return;
+    }
+
+    try {
+      setAiCategorizing(true);
+      const result = await autoCategorizeIssue(trimmedIssue);
+
+      if (!result.category) {
+        Alert.alert(
+          "No suggestion",
+          "AI could not determine a category. Please select a category manually.",
+        );
+        return;
+      }
+
+      setCategory(result.category);
+
+      if (result.source === "fallback") {
+        Alert.alert("Category set", `Set to "${result.category}" using local fallback rules.`);
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message.trim().length > 0
+          ? error.message
+          : "Could not auto-categorize issue.";
+      Alert.alert("AI categorization error", message);
+    } finally {
+      setAiCategorizing(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -305,6 +419,7 @@ export function useCreateReportForm() {
 
         const uploaded = await uploadFile(attachment.uri, destinationPath, {
           contentType: attachment.mimeType || getContentType(extension),
+          base64Data: attachment.base64 || undefined,
         });
 
         const uploadedPath =
@@ -358,6 +473,8 @@ export function useCreateReportForm() {
         updatedAt: serverTimestamp(),
       });
 
+      await cleanupCachedAttachments(attachments);
+
       setCategory("");
       setAddress("");
       setLocation("");
@@ -378,6 +495,7 @@ export function useCreateReportForm() {
   };
 
   return {
+    aiCategorizing,
     address,
     attachments,
     category,
@@ -387,6 +505,7 @@ export function useCreateReportForm() {
     handleMapPress,
     handlePickAttachment,
     handleRemoveAttachment,
+    handleAutoCategorizeIssue,
     handleSubmit,
     handleUseGps,
     issue,
@@ -404,3 +523,4 @@ export function useCreateReportForm() {
     waterMeter,
   };
 }
+

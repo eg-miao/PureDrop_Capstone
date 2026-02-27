@@ -1,10 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, doc, getDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  BackHandler,
   Image,
   SafeAreaView,
   ScrollView,
@@ -43,6 +44,20 @@ export default function ViewAllReportsScreen() {
   const { reportId, userId } = useLocalSearchParams<{ reportId?: string; userId?: string }>();
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<DetailedCommunityReport | null>(null);
+  const goToReportList = useCallback(() => {
+    router.replace("/regular_user/all_reports/all_reportlist");
+  }, [router]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+        goToReportList();
+        return true;
+      });
+
+      return () => subscription.remove();
+    }, [goToReportList])
+  );
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -133,7 +148,7 @@ export default function ViewAllReportsScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.centered}>
           <Text style={styles.emptyText}>Report not found.</Text>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={goToReportList}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
@@ -148,7 +163,7 @@ export default function ViewAllReportsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity style={styles.topBack} onPress={() => router.back()} activeOpacity={0.85}>
+        <TouchableOpacity style={styles.topBack} onPress={goToReportList} activeOpacity={0.85}>
           <Ionicons name="arrow-back" size={26} color="#ffffff" />
         </TouchableOpacity>
 
@@ -180,7 +195,23 @@ export default function ViewAllReportsScreen() {
           ) : (
             <View style={styles.attachmentRow}>
               {report.attachments.map((uri, index) => (
-                <Image key={`${uri}-${index}`} source={{ uri }} style={styles.attachmentImage} />
+                <TouchableOpacity
+                  key={`${uri}-${index}`}
+                  activeOpacity={0.86}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/regular_user/view_allrep/attachment_lightbox",
+                      params: {
+                        uri,
+                        reportId: report.reportId,
+                        userId: typeof userId === "string" ? userId : "",
+                        index: String(index + 1),
+                      },
+                    })
+                  }
+                >
+                  <Image source={{ uri }} style={styles.attachmentImage} />
+                </TouchableOpacity>
               ))}
             </View>
           )}
@@ -247,12 +278,12 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#111827",
-    fontSize: 20,
+    fontSize: 18,
     marginTop: 8,
   },
   value: {
     color: "#111827",
-    fontSize: 16,
+    fontSize: 14,
     marginTop: 2,
     marginBottom: 8,
   },

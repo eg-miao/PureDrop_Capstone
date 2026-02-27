@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
@@ -150,6 +150,7 @@ export default function ProfileViewScreen() {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
+        base64: true,
       });
 
       if (result.canceled || result.assets.length === 0) {
@@ -158,8 +159,8 @@ export default function ProfileViewScreen() {
 
       const selected = result.assets[0];
       const extension = getFileExtension(selected.uri, selected.mimeType);
-      // Single stable object path per user so each new upload replaces the previous avatar.
-      const destinationPath = `${avatarFolder}/${currentUserId}/profile-image`;
+      // Use a versioned object key so mobile image caches don't serve stale avatar bytes.
+      const destinationPath = `${avatarFolder}/${currentUserId}/profile-image-${Date.now()}.${extension}`;
 
       const latestProfileSnap = await getDoc(userDocRef);
       const latestProfileData = latestProfileSnap.exists()
@@ -173,7 +174,7 @@ export default function ProfileViewScreen() {
       const uploaded = await uploadFile(selected.uri, destinationPath, {
         bucket: avatarBucket,
         contentType: selected.mimeType || getContentType(extension),
-        upsert: true,
+        base64Data: selected.base64 || undefined,
       });
 
       const uploadedPath =

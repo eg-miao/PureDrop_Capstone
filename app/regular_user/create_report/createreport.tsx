@@ -20,6 +20,7 @@ export default function CreateReportScreen() {
     <SafeAreaView style={styles.container}>
       <CreateReportFormContent
         address={form.address}
+        aiCategorizing={form.aiCategorizing}
         attachments={form.attachments}
         category={form.category}
         gpsLoading={form.gpsLoading}
@@ -29,6 +30,7 @@ export default function CreateReportScreen() {
         submitLoading={form.submitLoading}
         waterMeter={form.waterMeter}
         onAddressChange={form.setAddress}
+        onAutoCategorizeIssue={form.handleAutoCategorizeIssue}
         onCategoryChange={form.setCategory}
         onIssueChange={form.setIssue}
         onLocationChange={form.setLocation}

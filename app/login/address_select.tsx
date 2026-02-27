@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   FlatList,
+  Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -48,7 +49,7 @@ const BARANGAYS: string[] = [
   "Putingbato",
   "Sam-ang",
   "Sangi",
-  "Santo Niño",
+  "Santo Ni\u00f1o",
   "Subayon",
   "Tancor",
   "Tubod",
@@ -99,43 +100,54 @@ export default function AddressSelectScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.sheet}>
-        <Text style={styles.title}>Select Address</Text>
+    <View style={styles.screen}>
+      <Pressable style={styles.backdrop} onPress={cancelSelection} />
 
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search barangay"
-          value={query}
-          onChangeText={setQuery}
-        />
+      <SafeAreaView style={styles.safeArea} pointerEvents="box-none">
+        <View style={styles.sheet}>
+          <Text style={styles.title}>Select Address</Text>
 
-        <FlatList
-          data={filteredBarangays}
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.itemButton}
-              onPress={() => selectAddress(item)}
-            >
-              <Text style={styles.itemText}>{item}</Text>
-            </TouchableOpacity>
-          )}
-          contentContainerStyle={styles.listContent}
-        />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search barangay"
+            value={query}
+            onChangeText={setQuery}
+          />
 
-        <TouchableOpacity style={styles.cancelButton} onPress={cancelSelection}>
-          <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          <FlatList
+            data={filteredBarangays}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.itemButton}
+                onPress={() => selectAddress(item)}
+              >
+                <Text style={styles.itemText}>{item}</Text>
+              </TouchableOpacity>
+            )}
+            contentContainerStyle={styles.listContent}
+            keyboardShouldPersistTaps="handled"
+          />
+
+          <TouchableOpacity style={styles.cancelButton} onPress={cancelSelection}>
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#D4ECFF",
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(5, 22, 38, 0.45)",
+  },
+  safeArea: {
+    flex: 1,
     justifyContent: "center",
     padding: 16,
   },
@@ -143,7 +155,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
     padding: 16,
-    maxHeight: "92%",
+    maxHeight: "88%",
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 12,
   },
   title: {
     fontSize: 18,

@@ -140,6 +140,34 @@ export const styles = StyleSheet.create({
     marginTop: 2,
   },
 
+  issueHeaderRow: {
+    marginTop: 2,
+    marginBottom: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+
+  autoCategoryButton: {
+    height: 30,
+    borderRadius: 7,
+    backgroundColor: "#d8ecf6",
+    borderWidth: 1,
+    borderColor: "#b9d8ef",
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+
+  autoCategoryButtonText: {
+    color: "#0f172a",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
   textArea: {
     height: 112,
     borderRadius: 7,

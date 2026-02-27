@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
@@ -37,11 +37,6 @@ export default function MainPage() {
 
     return () => unsubscribe();
   }, [router]);
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    router.replace("/login/login");
-  };
 
   if (loading) {
     return (
@@ -94,11 +89,16 @@ export default function MainPage() {
         >
           <Text style={styles.cardText}>Directory</Text>
         </TouchableOpacity>
-
-        {/* <TouchableOpacity style={[styles.card, { backgroundColor: "#f87171" }]} onPress={handleLogout}>
-          <Text style={styles.cardText}>Logout</Text>
-        </TouchableOpacity> */}
       </View>
+
+      {/* <TouchableOpacity
+        style={styles.aiFab}
+        onPress={() => router.push("/regular_user/assistant/assistant_main")}
+        activeOpacity={0.85}
+      >
+        <Text style={styles.aiFabLabel}>Help</Text>
+      </TouchableOpacity> */}
+
     </SafeAreaView>
   );
 }
@@ -163,5 +163,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: "center",
     fontWeight: "500",
+  },
+  aiFab: {
+    position: "absolute",
+    right: 18,
+    bottom: 86,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: "#0f172a",
+    borderWidth: 2,
+    borderColor: "#ffffff",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  aiFabLabel: {
+    color: "#ffffff",
+    fontWeight: "700",
+    fontSize: 14,
   },
 });

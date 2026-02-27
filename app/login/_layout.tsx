@@ -6,9 +6,9 @@ export default function LoginLayout() {
       <Stack.Screen
         name="address_select"
         options={{
-          headerShown: true,
-          title: "Address",
-          presentation: "modal",
+          presentation: "transparentModal",
+          animation: "fade",
+          contentStyle: { backgroundColor: "transparent" },
         }}
       />
     </Stack>

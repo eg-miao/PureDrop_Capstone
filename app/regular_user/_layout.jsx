@@ -4,6 +4,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Image, StyleSheet, View } from "react-native";
+import { useReportNotifications } from "../../components/notifications/notif_func";
 import { auth, db } from "../../firebaseConfig";
 
 export default function RegularUserLayout() {
@@ -11,6 +12,7 @@ export default function RegularUserLayout() {
   const [authChecked, setAuthChecked] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const redirectingRef = useRef(false);
+  const { unreadCount, markAllAsRead } = useReportNotifications();
 
   useEffect(() => {
     let unsubscribeProfile = null;
@@ -59,7 +61,7 @@ export default function RegularUserLayout() {
         unsubscribeProfile();
       }
     };
-  }, []);
+  }, [router]);
 
   const tabAvatarSource = profileImageUrl
     ? { uri: profileImageUrl }
@@ -101,13 +103,21 @@ export default function RegularUserLayout() {
         name="notifications"
         options={{
           href: "/regular_user/notifications",
-          tabBarIcon: () => (
-            <Ionicons
-              name="notifications-outline"
-              size={26}
-              color="#1e88e5"
-            />
+          tabBarIcon: ({ focused }) => (
+            <View style={styles.notifIconWrap}>
+              <Ionicons
+                name="notifications-outline"
+                size={26}
+                color="#1e88e5"
+              />
+              {unreadCount > 0 && !focused ? <View style={styles.notifDot} /> : null}
+            </View>
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            markAllAsRead();
+          },
         }}
       />
 
@@ -136,8 +146,17 @@ export default function RegularUserLayout() {
       <Tabs.Screen name="profile/profileview" options={{ href: null }} />
       <Tabs.Screen name="reports-list" options={{ href: null }} />
       <Tabs.Screen name="all_reports/all_reportlist" options={{ href: null }} />
+      <Tabs.Screen
+        name="view_allrep/attachment_lightbox"
+        options={{ href: null, tabBarStyle: { display: "none" } }}
+      />
+      <Tabs.Screen
+        name="attachment_lightbox_user"
+        options={{ href: null, tabBarStyle: { display: "none" } }}
+      />
       <Tabs.Screen name="view_reportuser" options={{ href: null, tabBarStyle: { display: "none" } }} />
       <Tabs.Screen name="view_allrep/viewallreports" options={{ href: null, tabBarStyle: { display: "none" } }} />
+      <Tabs.Screen name="assistant/assistant_main" options={{ href: null, tabBarStyle: { display: "none" } }} />
       <Tabs.Screen name="directory" options={{ href: null }} />
       <Tabs.Screen name="about" options={{ href: null }} />
       <Tabs.Screen
@@ -171,6 +190,21 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
+  },
+  notifIconWrap: {
+    width: 30,
+    height: 30,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  notifDot: {
+    position: "absolute",
+    top: 3,
+    right: 1,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ef4444",
   },
 
   loading: {
