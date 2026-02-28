@@ -16,6 +16,7 @@ export type NotificationItem = {
   id: string;
   reportId: string;
   status: string;
+  changedByAdmin: boolean;
   message: string;
   createdLabel: string;
   createdAtMs: number;
@@ -71,7 +72,25 @@ const resolveTimestampMs = (value: unknown): number => {
   return 0;
 };
 
-const buildMessage = (status: string, reportId: string) => {
+const buildMessage = (status: string, reportId: string, changedByAdmin: boolean) => {
+  if (changedByAdmin) {
+    if (status === "Approved") {
+      return `Admin approved your report #${reportId}.`;
+    }
+
+    if (status === "Rejected") {
+      return `Admin rejected your report #${reportId}.`;
+    }
+
+    if (status === "Resolved") {
+      return `Admin resolved your report #${reportId}.`;
+    }
+
+    if (status === "Pending") {
+      return `Admin set your report #${reportId} to pending.`;
+    }
+  }
+
   if (status === "Approved") {
     return `Your report #${reportId} has been approved.`;
   }
@@ -89,6 +108,15 @@ const buildMessage = (status: string, reportId: string) => {
   }
 
   return `Your report #${reportId} is still pending.`;
+};
+
+const resolveChangedByAdmin = (data: DocumentData): boolean => {
+  const rawValue = data.statusUpdatedBy;
+  if (typeof rawValue !== "string") {
+    return false;
+  }
+
+  return rawValue.trim().toLowerCase() === "admin";
 };
 
 const NOTIFICATION_TIME_FIELDS = [
@@ -122,12 +150,14 @@ const mapReportToNotification = (
       : snap.id;
   const status = normalizeStatus(data.status);
   const notificationTime = resolveNotificationTime(data);
+  const changedByAdmin = resolveChangedByAdmin(data);
 
   return {
     id: snap.id,
     reportId,
     status,
-    message: buildMessage(status, reportId),
+    changedByAdmin,
+    message: buildMessage(status, reportId, changedByAdmin),
     createdLabel: formatTimestampLabel(notificationTime),
     createdAtMs: resolveTimestampMs(notificationTime),
   };
@@ -180,7 +210,12 @@ export function useReportNotifications() {
           }
 
           const userData = userSnap.data() as { notificationsLastSeenAt?: unknown };
-          setLastSeenMsSafe(resolveTimestampMs(userData.notificationsLastSeenAt));
+          const resolvedLastSeenMs = resolveTimestampMs(userData.notificationsLastSeenAt);
+
+          // Preserve optimistic lastSeen while serverTimestamp is still pending.
+          if (resolvedLastSeenMs > 0 || lastSeenMsRef.current <= 0) {
+            setLastSeenMsSafe(resolvedLastSeenMs);
+          }
         },
         () => {
           setLastSeenMsSafe(0);
@@ -208,6 +243,7 @@ export function useReportNotifications() {
                 a.id !== b.id ||
                 a.reportId !== b.reportId ||
                 a.status !== b.status ||
+                a.changedByAdmin !== b.changedByAdmin ||
                 a.message !== b.message ||
                 a.createdLabel !== b.createdLabel ||
                 a.createdAtMs !== b.createdAtMs

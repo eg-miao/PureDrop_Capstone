@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs, useRouter } from "expo-router";
+import { Tabs, usePathname, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
@@ -9,6 +9,7 @@ import { auth, db } from "../../firebaseConfig";
 
 export default function RegularUserLayout() {
   const router = useRouter();
+  const pathname = usePathname();
   const [authChecked, setAuthChecked] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const redirectingRef = useRef(false);
@@ -63,6 +64,12 @@ export default function RegularUserLayout() {
     };
   }, [router]);
 
+  useEffect(() => {
+    if (typeof pathname === "string" && pathname.startsWith("/regular_user/notifications") && unreadCount > 0) {
+      markAllAsRead();
+    }
+  }, [markAllAsRead, pathname, unreadCount]);
+
   const tabAvatarSource = profileImageUrl
     ? { uri: profileImageUrl }
     : require("../../assets/images/default_account.png");
@@ -116,6 +123,9 @@ export default function RegularUserLayout() {
         }}
         listeners={{
           tabPress: () => {
+            markAllAsRead();
+          },
+          focus: () => {
             markAllAsRead();
           },
         }}

@@ -1,7 +1,7 @@
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { getPublicFileUrl, removeFile, uploadFile } from "../../../api/storage";
@@ -64,8 +64,14 @@ export default function ProfileViewScreen() {
 
   useEffect(() => {
     let isMounted = true;
+    let unsubscribeProfile: (() => void) | null = null;
 
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+
       if (!currentUser) {
         if (isMounted) {
           setCurrentUserId(null);
@@ -76,56 +82,65 @@ export default function ProfileViewScreen() {
         return;
       }
 
-      try {
-        if (isMounted) {
-          setCurrentUserId(currentUser.uid);
-        }
-
-        const profileRef = doc(db, "regular_user", currentUser.uid);
-        const profileSnap = await getDoc(profileRef);
-
-        if (!isMounted) {
-          return;
-        }
-
-        if (!profileSnap.exists()) {
-          setError("Profile not found.");
-          setProfile({
-            fullName: "User",
-            address: "No address",
-            email: currentUser.email || "No email",
-            profileImageUrl: null,
-          });
-          return;
-        }
-
-        const data = profileSnap.data() as RegularUserDoc;
-        setProfileImagePath(typeof data.profileImagePath === "string" ? data.profileImagePath : null);
-        setProfile({
-          fullName: data.fullName || "User",
-          address: data.address || "No address",
-          email: data.email || currentUser.email || "No email",
-          profileImageUrl:
-            typeof data.profileImageUrl === "string" && data.profileImageUrl.length > 0
-              ? data.profileImageUrl
-              : null,
-        });
-      } catch (fetchError) {
-        if (!isMounted) {
-          return;
-        }
-        console.error("Failed to load profile:", fetchError);
-        setError("Failed to load your profile.");
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+      if (isMounted) {
+        setCurrentUserId(currentUser.uid);
+        setError(null);
+        setLoading(true);
       }
+
+      const profileRef = doc(db, "regular_user", currentUser.uid);
+      unsubscribeProfile = onSnapshot(
+        profileRef,
+        (profileSnap) => {
+          if (!isMounted) {
+            return;
+          }
+
+          if (!profileSnap.exists()) {
+            setError("Profile not found.");
+            setProfileImagePath(null);
+            setProfile({
+              fullName: "User",
+              address: "No address",
+              email: currentUser.email || "No email",
+              profileImageUrl: null,
+            });
+            setLoading(false);
+            return;
+          }
+
+          const data = profileSnap.data() as RegularUserDoc;
+          setError(null);
+          setProfileImagePath(typeof data.profileImagePath === "string" ? data.profileImagePath : null);
+          setProfile({
+            fullName: data.fullName || "User",
+            address: data.address || "No address",
+            email: data.email || currentUser.email || "No email",
+            profileImageUrl:
+              typeof data.profileImageUrl === "string" && data.profileImageUrl.length > 0
+                ? data.profileImageUrl
+                : null,
+          });
+          setLoading(false);
+        },
+        (profileError) => {
+          if (!isMounted) {
+            return;
+          }
+
+          console.error("Failed to subscribe to profile:", profileError);
+          setError("Failed to load your profile.");
+          setLoading(false);
+        },
+      );
     });
 
     return () => {
       isMounted = false;
-      unsubscribe();
+      unsubscribeAuth();
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+      }
     };
   }, [router]);
 
