@@ -2,11 +2,17 @@ import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { auth } from "../../../firebaseConfig";
+import { markCurrentUserInactive } from "../status/RegularUserPresenceSync";
 
 export default function SignOutModal() {
   const router = useRouter();
 
   const handleConfirm = async () => {
+    try {
+      await markCurrentUserInactive("manual_logout");
+    } catch {
+      // Keep sign-out flow non-blocking even if presence update fails.
+    }
     await signOut(auth);
     router.replace("/login/login");
   };

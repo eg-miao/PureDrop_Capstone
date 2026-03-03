@@ -23,7 +23,7 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      const user = await loginUser({ email, password });
+      await loginUser({ email, password });
 
       Alert.alert("Success", "Logged in successfully");
 

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Image, StyleSheet, View } from "react-native";
 import { useReportNotifications } from "../../components/notifications/notif_func";
 import { auth, db } from "../../firebaseConfig";
+import RegularUserPresenceSync from "./status/RegularUserPresenceSync";
 
 export default function RegularUserLayout() {
   const router = useRouter();
@@ -83,28 +84,30 @@ export default function RegularUserLayout() {
   }
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarStyle: styles.tabBar,
-        tabBarItemStyle: styles.tabItem,
-        lazy: false,
-      }}
-    >
-      <Tabs.Screen
-        name="home"
-        options={{
-          href: "/regular_user/home",
-          tabBarIcon: () => (
-            <Ionicons
-              name="home-outline"
-              size={26}
-              color="#1e88e5"
-            />
-          ),
+    <>
+      <RegularUserPresenceSync />
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarShowLabel: false,
+          tabBarStyle: styles.tabBar,
+          tabBarItemStyle: styles.tabItem,
+          lazy: false,
         }}
-      />
+      >
+        <Tabs.Screen
+          name="home"
+          options={{
+            href: "/regular_user/home",
+            tabBarIcon: () => (
+              <Ionicons
+                name="home-outline"
+                size={26}
+                color="#1e88e5"
+              />
+            ),
+          }}
+        />
 
       <Tabs.Screen
         name="notifications"
@@ -166,14 +169,16 @@ export default function RegularUserLayout() {
       />
       <Tabs.Screen name="view_reportuser" options={{ href: null, tabBarStyle: { display: "none" } }} />
       <Tabs.Screen name="view_allrep/viewallreports" options={{ href: null, tabBarStyle: { display: "none" } }} />
+      <Tabs.Screen name="status/RegularUserPresenceSync" options={{ href: null, tabBarStyle: { display: "none" } }} />
       <Tabs.Screen name="assistant/assistant_main" options={{ href: null, tabBarStyle: { display: "none" } }} />
       <Tabs.Screen name="directory" options={{ href: null }} />
       <Tabs.Screen name="about" options={{ href: null }} />
-      <Tabs.Screen
-        name="signout"
-        options={{ href: null, tabBarStyle: { display: "none" } }}
-      />
-    </Tabs>
+        <Tabs.Screen
+          name="signout"
+          options={{ href: null, tabBarStyle: { display: "none" } }}
+        />
+      </Tabs>
+    </>
   );
 }
 

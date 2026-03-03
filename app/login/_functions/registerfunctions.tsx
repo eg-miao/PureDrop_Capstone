@@ -63,8 +63,14 @@ export async function registerUser({
     address: formattedAddress,
     email,
     role: "regular_user",
+    status: "Inactive",
+    presenceStatus: "Inactive",
+    presenceSource: "register",
+    presenceUpdatedAt: serverTimestamp(),
+    lastSeenAt: serverTimestamp(),
     waterMeter,
     createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   });
 
   return user;
