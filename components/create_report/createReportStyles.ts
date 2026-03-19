@@ -231,6 +231,72 @@ export const styles = StyleSheet.create({
     marginTop: 10,
   },
 
+  attachmentMlCard: {
+    marginTop: 12,
+    borderRadius: 10,
+    backgroundColor: "#d8ecf6",
+    borderWidth: 1,
+    borderColor: "#b9d8ef",
+    padding: 12,
+    gap: 8,
+  },
+
+  attachmentMlHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  attachmentMlTitle: {
+    color: "#0f172a",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  attachmentMlLoadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  attachmentMlSummary: {
+    color: "#334155",
+    fontSize: 11,
+    lineHeight: 16,
+  },
+
+  attachmentMlItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+  },
+
+  attachmentMlItemPassed: {
+    backgroundColor: "#ecfdf5",
+    borderColor: "#bbf7d0",
+  },
+
+  attachmentMlItemWarning: {
+    backgroundColor: "#fffbeb",
+    borderColor: "#fde68a",
+  },
+
+  attachmentMlItemBlocked: {
+    backgroundColor: "#fef2f2",
+    borderColor: "#fecaca",
+  },
+
+  attachmentMlItemText: {
+    flex: 1,
+    color: "#334155",
+    fontSize: 11,
+    lineHeight: 16,
+  },
+
   submitButton: {
     marginTop: 24,
     marginBottom: 8,

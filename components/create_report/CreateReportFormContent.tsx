@@ -1,6 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  AttachmentMachineLearning,
+  type AttachmentMachineLearningStatus,
+} from "./AttachmentMachineLearning";
 import { LightboxCreateReport } from "./LightboxCreateReport";
 import { styles } from "./createReportStyles";
 import type { Attachment } from "./useCreateReportForm";
@@ -20,6 +24,7 @@ type CreateReportFormContentProps = {
   onIssueChange: (value: string) => void;
   onLocationChange: (value: string) => void;
   onPickAttachment: () => void;
+  onAttachmentReviewChange?: (status: AttachmentMachineLearningStatus) => void;
   onRemoveAttachment: (index: number) => void;
   onSubmit: () => void;
   onUseGps: () => void;
@@ -43,6 +48,7 @@ export function CreateReportFormContent({
   onIssueChange,
   onLocationChange,
   onPickAttachment,
+  onAttachmentReviewChange,
   onRemoveAttachment,
   onSubmit,
   onUseGps,
@@ -183,6 +189,12 @@ export function CreateReportFormContent({
         </View>
 
         <Text style={styles.attachmentsText}>Attachments: {attachments.length}/2</Text>
+
+        <AttachmentMachineLearning
+          attachments={attachments}
+          category={category}
+          onStatusChange={onAttachmentReviewChange}
+        />
 
         <TouchableOpacity style={styles.submitButton} onPress={onSubmit} disabled={submitLoading}>
           <Text style={styles.submitText}>{submitLoading ? "Uploading..." : "Submit"}</Text>

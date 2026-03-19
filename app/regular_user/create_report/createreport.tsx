@@ -1,5 +1,7 @@
 import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native";
+import { useState } from "react";
+import { Alert, SafeAreaView } from "react-native";
+import type { AttachmentMachineLearningStatus } from "../../../components/create_report/AttachmentMachineLearning";
 import { CreateReportFormContent } from "../../../components/create_report/CreateReportFormContent";
 import { GpsMapModal } from "../../../components/create_report/GpsMapModal";
 import { styles } from "../../../components/create_report/createReportStyles";
@@ -8,8 +10,16 @@ import { useCreateReportForm } from "../../../components/create_report/useCreate
 export default function CreateReportScreen() {
   const form = useCreateReportForm();
   const router = useRouter();
+  const [attachmentReview, setAttachmentReview] = useState<AttachmentMachineLearningStatus | null>(
+    null,
+  );
 
   const handleSubmitPress = async () => {
+    if (attachmentReview && !attachmentReview.canSubmit) {
+      Alert.alert("Attachment check", attachmentReview.summary);
+      return;
+    }
+
     const didSubmit = await form.handleSubmit();
     if (didSubmit) {
       router.replace("/regular_user/create_report/submitted");
@@ -32,6 +42,7 @@ export default function CreateReportScreen() {
         onCategoryChange={form.setCategory}
         onIssueChange={form.setIssue}
         onLocationChange={form.setLocation}
+        onAttachmentReviewChange={setAttachmentReview}
         onPickAttachment={form.handlePickAttachment}
         onRemoveAttachment={form.handleRemoveAttachment}
         onSubmit={handleSubmitPress}
