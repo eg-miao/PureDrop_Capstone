@@ -13,7 +13,6 @@ export type Attachment = {
   uri: string;
   mimeType?: string | null;
   fileName?: string | null;
-  base64?: string | null;
 };
 
 const TOLEDO_BARANGAYS = [
@@ -161,16 +160,6 @@ export function useCreateReportForm() {
     typeof FileSystem.cacheDirectory === "string" &&
     uri.startsWith(`${FileSystem.cacheDirectory}${REPORT_ATTACHMENT_CACHE_DIR}/`);
 
-  const ensureAttachmentBase64 = async (uri: string, base64?: string | null) => {
-    if (base64 && base64.length > 0) {
-      return base64;
-    }
-
-    return FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-  };
-
   const createStableAttachment = async (picked: ImagePicker.ImagePickerAsset): Promise<Attachment> => {
     let stableUri = picked.uri;
     const extension = getFileExtension({
@@ -190,13 +179,10 @@ export function useCreateReportForm() {
       stableUri = cacheUri;
     }
 
-    const base64 = await ensureAttachmentBase64(stableUri, picked.base64);
-
     return {
       uri: stableUri,
       mimeType: picked.mimeType,
       fileName: picked.fileName,
-      base64,
     };
   };
 
@@ -310,7 +296,6 @@ export function useCreateReportForm() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
       allowsMultipleSelection: false,
-      base64: true,
     });
 
     if (!result.canceled && result.assets.length > 0) {
@@ -419,7 +404,6 @@ export function useCreateReportForm() {
 
         const uploaded = await uploadFile(attachment.uri, destinationPath, {
           contentType: attachment.mimeType || getContentType(extension),
-          base64Data: attachment.base64 || undefined,
         });
 
         const uploadedPath =

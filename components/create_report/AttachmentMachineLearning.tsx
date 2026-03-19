@@ -206,21 +206,34 @@ export function AttachmentMachineLearning({
       summary: "Checking the attachments with secure server review...",
     });
 
-    void Promise.all(attachments.map((attachment) => buildItemReview(attachment, category)))
-      .then((items) => {
-        const nextStatus: AttachmentMachineLearningStatus = {
-          canSubmit: !items.some((item) => item.state === "blocked"),
-          items,
-          state: items.some((item) => item.state === "blocked")
-            ? "blocked"
-            : items.some((item) => item.state === "warning")
-              ? "warning"
-              : "passed",
-          summary: buildSummary(items, category),
-        };
+    void (async () => {
+      const items: AttachmentMachineLearningItem[] = [];
 
-        updateStatus(nextStatus);
-      })
+      for (const attachment of attachments) {
+        if (cancelled) {
+          return;
+        }
+
+        items.push(await buildItemReview(attachment, category));
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      const nextStatus: AttachmentMachineLearningStatus = {
+        canSubmit: !items.some((item) => item.state === "blocked"),
+        items,
+        state: items.some((item) => item.state === "blocked")
+          ? "blocked"
+          : items.some((item) => item.state === "warning")
+            ? "warning"
+            : "passed",
+        summary: buildSummary(items, category),
+      };
+
+      updateStatus(nextStatus);
+    })()
       .catch((error) => {
         const message =
           error instanceof Error && error.message.trim().length > 0

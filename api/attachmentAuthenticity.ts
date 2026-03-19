@@ -1,5 +1,8 @@
-import { supabase } from "./supabase";
+import { Buffer } from "buffer";
+import * as FileSystem from "expo-file-system/legacy";
+import { Platform } from "react-native";
 import { FunctionsFetchError, FunctionsHttpError, FunctionsRelayError } from "@supabase/supabase-js";
+import { supabase } from "./supabase";
 import type { Attachment } from "../components/create_report/useCreateReportForm";
 
 type AttachmentAuthenticityResponse = {
@@ -16,12 +19,6 @@ type AttachmentAuthenticityResponse = {
   } | null;
 };
 
-type ReviewAttachmentPayload = {
-  base64: string;
-  fileName?: string | null;
-  mimeType?: string | null;
-};
-
 type EdgeFunctionErrorPayload = {
   error?: {
     message?: string;
@@ -29,7 +26,113 @@ type EdgeFunctionErrorPayload = {
   };
 };
 
+type LegacyAttachmentAuthenticityRequest = {
+  base64: string;
+  fileName: string;
+  mimeType: string;
+};
+
 const REVIEW_ATTACHMENT_FUNCTION = "review-report-attachment";
+
+const getAttachmentExtension = (attachment: Attachment) => {
+  const cleanFileName = attachment.fileName?.split("?")[0] ?? "";
+  const cleanUri = attachment.uri.split("?")[0];
+  const source = cleanFileName || cleanUri;
+  const parts = source.split(".");
+
+  if (parts.length > 1) {
+    return parts[parts.length - 1].toLowerCase();
+  }
+
+  const mimeType = attachment.mimeType?.toLowerCase() ?? "";
+  if (mimeType.includes("png")) return "png";
+  if (mimeType.includes("webp")) return "webp";
+  if (mimeType.includes("heic")) return "heic";
+
+  return "jpg";
+};
+
+const getAttachmentMimeType = (attachment: Attachment) => {
+  const mimeType = attachment.mimeType?.trim();
+  if (mimeType) {
+    return mimeType;
+  }
+
+  switch (getAttachmentExtension(attachment)) {
+    case "png":
+      return "image/png";
+    case "webp":
+      return "image/webp";
+    case "heic":
+      return "image/heic";
+    case "jpeg":
+    case "jpg":
+    default:
+      return "image/jpeg";
+  }
+};
+
+const getAttachmentFileName = (attachment: Attachment) =>
+  attachment.fileName?.trim() || `report-attachment.${getAttachmentExtension(attachment)}`;
+
+const buildInvokeBody = async (attachment: Attachment) => {
+  const formData = new FormData();
+  const fileName = getAttachmentFileName(attachment);
+  const mimeType = getAttachmentMimeType(attachment);
+
+  if (Platform.OS === "web") {
+    const response = await fetch(attachment.uri);
+    if (!response.ok) {
+      throw new Error(`Unable to read the selected attachment (${response.status}).`);
+    }
+
+    const blob = await response.blob();
+    formData.append("media", blob, fileName);
+    return formData;
+  }
+
+  formData.append(
+    "media",
+    {
+      name: fileName,
+      type: mimeType,
+      uri: attachment.uri,
+    } as any,
+  );
+
+  return formData;
+};
+
+const buildLegacyInvokeBody = async (
+  attachment: Attachment,
+): Promise<LegacyAttachmentAuthenticityRequest> => {
+  const fileName = getAttachmentFileName(attachment);
+  const mimeType = getAttachmentMimeType(attachment);
+
+  if (Platform.OS === "web") {
+    const response = await fetch(attachment.uri);
+    if (!response.ok) {
+      throw new Error(`Unable to read the selected attachment (${response.status}).`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    return {
+      base64: Buffer.from(arrayBuffer).toString("base64"),
+      fileName,
+      mimeType,
+    };
+  }
+
+  const base64 = await FileSystem.readAsStringAsync(attachment.uri, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+
+  return {
+    base64,
+    fileName,
+    mimeType,
+  };
+};
 
 const readResponseMessage = async (response?: Response) => {
   if (!response) {
@@ -79,28 +182,44 @@ const getSupabaseFunctionErrorMessage = async (error: unknown, response?: Respon
   return "Authenticity review failed.";
 };
 
+const shouldRetryWithLegacyJson = (message: string) => {
+  const normalized = message.trim().toLowerCase();
+  return normalized.includes("valid json");
+};
+
+const invokeReviewAttachment = async (
+  body: FormData | LegacyAttachmentAuthenticityRequest,
+) =>
+  supabase.functions.invoke<AttachmentAuthenticityResponse>(REVIEW_ATTACHMENT_FUNCTION, {
+    body,
+  });
+
 export async function reviewAttachmentAuthenticity(
   attachment: Attachment,
 ): Promise<AttachmentAuthenticityResponse> {
-  const base64 = attachment.base64?.trim();
-
-  if (!base64) {
-    throw new Error("Selected attachment is missing base64 data for authenticity review.");
+  if (!attachment.uri.trim()) {
+    throw new Error("Selected attachment is missing a file URI for authenticity review.");
   }
 
-  const { data, error, response } = await supabase.functions.invoke<AttachmentAuthenticityResponse>(
-    REVIEW_ATTACHMENT_FUNCTION,
-    {
-      body: {
-        base64,
-        fileName: attachment.fileName ?? null,
-        mimeType: attachment.mimeType ?? null,
-      },
-    },
-  );
+  const body = await buildInvokeBody(attachment);
+  let { data, error, response } = await invokeReviewAttachment(body);
 
   if (error) {
-    throw new Error(await getSupabaseFunctionErrorMessage(error, response));
+    const message = await getSupabaseFunctionErrorMessage(error, response);
+
+    if (shouldRetryWithLegacyJson(message)) {
+      const legacyBody = await buildLegacyInvokeBody(attachment);
+      const legacyResult = await invokeReviewAttachment(legacyBody);
+      data = legacyResult.data;
+      error = legacyResult.error;
+      response = legacyResult.response;
+
+      if (error) {
+        throw new Error(await getSupabaseFunctionErrorMessage(error, response));
+      }
+    } else {
+      throw new Error(message);
+    }
   }
 
   if (!data) {
