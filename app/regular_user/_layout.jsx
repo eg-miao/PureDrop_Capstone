@@ -1,0 +1,233 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs, usePathname, useRouter } from "expo-router";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, onSnapshot } from "firebase/firestore";
+import { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Image, StyleSheet, View } from "react-native";
+import { useReportNotifications } from "../../components/notifications/notif_func";
+import { auth, db } from "../../firebaseConfig";
+import RegularUserPresenceSync from "./status/RegularUserPresenceSync";
+
+export default function RegularUserLayout() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
+  const redirectingRef = useRef(false);
+  const { unreadCount, markAllAsRead } = useReportNotifications();
+
+  useEffect(() => {
+    let unsubscribeProfile = null;
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+
+      if (!currentUser) {
+        setProfileImageUrl(null);
+        if (!redirectingRef.current) {
+          redirectingRef.current = true;
+          router.replace("/login/login");
+        }
+      } else {
+        redirectingRef.current = false;
+        const userRef = doc(db, "regular_user", currentUser.uid);
+        unsubscribeProfile = onSnapshot(
+          userRef,
+          (snap) => {
+            if (!snap.exists()) {
+              setProfileImageUrl(null);
+              return;
+            }
+
+            const data = snap.data();
+            setProfileImageUrl(
+              typeof data.profileImageUrl === "string" && data.profileImageUrl.length > 0
+                ? data.profileImageUrl
+                : null
+            );
+          },
+          () => {
+            setProfileImageUrl(null);
+          }
+        );
+      }
+      setAuthChecked(true);
+    });
+
+    return () => {
+      unsubscribe();
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+      }
+    };
+  }, [router]);
+
+  useEffect(() => {
+    if (typeof pathname === "string" && pathname.startsWith("/regular_user/notifications") && unreadCount > 0) {
+      markAllAsRead();
+    }
+  }, [markAllAsRead, pathname, unreadCount]);
+
+  const tabAvatarSource = profileImageUrl
+    ? { uri: profileImageUrl }
+    : require("../../assets/images/default_account.png");
+
+  if (!authChecked) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color="#1e88e5" />
+      </View>
+    );
+  }
+
+  return (
+    <>
+      <RegularUserPresenceSync />
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarShowLabel: false,
+          tabBarStyle: styles.tabBar,
+          tabBarItemStyle: styles.tabItem,
+          lazy: false,
+        }}
+      >
+        <Tabs.Screen
+          name="home"
+          options={{
+            href: "/regular_user/home",
+            tabBarIcon: () => (
+              <Ionicons
+                name="home-outline"
+                size={26}
+                color="#1e88e5"
+              />
+            ),
+          }}
+        />
+
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          href: "/regular_user/notifications",
+          tabBarIcon: ({ focused }) => (
+            <View style={styles.notifIconWrap}>
+              <Ionicons
+                name="notifications-outline"
+                size={26}
+                color="#1e88e5"
+              />
+              {unreadCount > 0 && !focused ? <View style={styles.notifDot} /> : null}
+            </View>
+          ),
+        }}
+        listeners={{
+          tabPress: () => {
+            markAllAsRead();
+          },
+          focus: () => {
+            markAllAsRead();
+          },
+        }}
+      />
+
+      <Tabs.Screen
+        name="profile"
+        options={{
+          href: "/regular_user/profile",
+          tabBarIcon: () => (
+            <Image
+              source={tabAvatarSource}
+              style={styles.avatar}
+            />
+          ),
+        }}
+      />
+
+      {/* Hidden routes (still navigable) */}
+      <Tabs.Screen name="report" options={{ href: null }} />
+      <Tabs.Screen
+        name="create_report/submitted"
+        options={{ href: null, tabBarStyle: { display: "none" } }}
+      />
+      <Tabs.Screen name="notifications/notification_main" options={{ href: null }} />
+      <Tabs.Screen name="view-reports" options={{ href: null }} />
+      <Tabs.Screen name="create_report/createreport" options={{ href: null }} />
+      <Tabs.Screen name="profile/profileview" options={{ href: null }} />
+      <Tabs.Screen name="reports-list" options={{ href: null }} />
+      <Tabs.Screen name="all_reports/all_reportlist" options={{ href: null }} />
+      <Tabs.Screen
+        name="view_allrep/attachment_lightbox"
+        options={{ href: null, tabBarStyle: { display: "none" } }}
+      />
+      <Tabs.Screen
+        name="attachment_lightbox_user"
+        options={{ href: null, tabBarStyle: { display: "none" } }}
+      />
+      <Tabs.Screen name="view_reportuser" options={{ href: null, tabBarStyle: { display: "none" } }} />
+      <Tabs.Screen name="view_allrep/viewallreports" options={{ href: null, tabBarStyle: { display: "none" } }} />
+      <Tabs.Screen name="status/RegularUserPresenceSync" options={{ href: null, tabBarStyle: { display: "none" } }} />
+      <Tabs.Screen name="assistant/assistant_main" options={{ href: null, tabBarStyle: { display: "none" } }} />
+      <Tabs.Screen name="directory" options={{ href: null }} />
+      <Tabs.Screen name="about" options={{ href: null }} />
+        <Tabs.Screen
+          name="signout"
+          options={{ href: null, tabBarStyle: { display: "none" } }}
+        />
+      </Tabs>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  tabBar: {
+    height: 65,
+    backgroundColor: "#e0f2fe",
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+
+    // 🔥 IMPORTANT FIXES
+    position: "absolute",
+    paddingBottom: 8,
+    paddingTop: 8,
+    paddingHorizontal: 10,
+  },
+
+  tabItem: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  avatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+  },
+  notifIconWrap: {
+    width: 30,
+    height: 30,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  notifDot: {
+    position: "absolute",
+    top: 3,
+    right: 1,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ef4444",
+  },
+
+  loading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#e0f2fe",
+  },
+});
+
+

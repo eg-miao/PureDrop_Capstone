@@ -1,0 +1,4 @@
+project_id = "kfanwlpemesqvquypqvh"
+
+[functions.review-report-attachment]
+verify_jwt = false
