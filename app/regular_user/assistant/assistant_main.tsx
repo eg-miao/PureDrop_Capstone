@@ -4,13 +4,13 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { askAssistantQuestion } from "../../../lib/regular_user/assistant_api";
 
 type ChatMessage = {
@@ -21,6 +21,7 @@ type ChatMessage = {
 
 export default function AssistantMainScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -76,9 +77,13 @@ export default function AssistantMainScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.replace("/regular_user/home")}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <View style={[styles.header, { paddingTop: Math.max(8, insets.top + 2) }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.replace("/regular_user/home")}
+          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+        >
           <Text style={styles.backLabel}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Assistant</Text>
@@ -133,7 +138,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingTop: 8,
     paddingBottom: 10,
   },
   backButton: {
@@ -141,6 +145,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 7,
+    zIndex: 2,
   },
   backLabel: {
     color: "#ffffff",

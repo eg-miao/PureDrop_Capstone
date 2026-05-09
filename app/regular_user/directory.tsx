@@ -1,14 +1,20 @@
 import { useRouter } from "expo-router";
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function DirectoryScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backText}>‹</Text>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <View style={[styles.header, { paddingTop: Math.max(12, insets.top + 4) }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+        >
+          <Text style={styles.backText}>&lsaquo;</Text>
         </TouchableOpacity>
 
         <Text style={styles.title}>Directory</Text>
@@ -20,9 +26,9 @@ export default function DirectoryScreen() {
         <Text style={styles.sectionTitle}>Address</Text>
 
         <Text style={styles.label}>Main Office</Text>
-        <Text style={styles.value}>S. Osmeña St. Brgy. Sangi, Toledo City, Cebu</Text>
+        <Text style={styles.value}>S. Osmena St. Brgy. Sangi, Toledo City, Cebu</Text>
 
-        <Text style={styles.label}>Costumer Interaction Center</Text>
+        <Text style={styles.label}>Customer Interaction Center</Text>
         <Text style={styles.value}>CEBECO II Compound, Sipaway, Luray II, Toledo City, Cebu</Text>
 
         <Text style={styles.sectionTitle}>Office Hours</Text>
@@ -49,7 +55,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingTop: 12,
     paddingBottom: 10,
   },
 
@@ -60,6 +65,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#3b82f6",
     justifyContent: "center",
     alignItems: "center",
+    zIndex: 2,
   },
 
   backText: {

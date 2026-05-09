@@ -6,13 +6,13 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { auth, db } from "../../firebaseConfig";
 
 type DetailedReport = {
@@ -53,6 +53,7 @@ const normalizeReport = (value: unknown, fallbackId: string): DetailedReport => 
 
 export default function ViewReportUserScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { reportId, userId } = useLocalSearchParams<{ reportId?: string; userId?: string }>();
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<DetailedReport | null>(null);
@@ -120,7 +121,7 @@ export default function ViewReportUserScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#ffffff" />
         </View>
@@ -130,7 +131,7 @@ export default function ViewReportUserScreen() {
 
   if (!report) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.centered}>
           <Text style={styles.emptyText}>Report not found.</Text>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
@@ -142,9 +143,14 @@ export default function ViewReportUserScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity style={styles.topBack} onPress={() => router.back()} activeOpacity={0.85}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: Math.max(16, insets.top + 6) }]}>
+        <TouchableOpacity
+          style={styles.topBack}
+          onPress={() => router.back()}
+          activeOpacity={0.85}
+          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+        >
           <Ionicons name="arrow-back" size={26} color="#ffffff" />
         </TouchableOpacity>
 
@@ -208,7 +214,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingTop: 16,
     paddingBottom: 28,
   },
   centered: {
@@ -225,6 +230,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 18,
+    zIndex: 2,
   },
   card: {
     borderRadius: 12,

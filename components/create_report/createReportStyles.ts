@@ -13,8 +13,19 @@ export const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     paddingHorizontal: 28,
-    paddingTop: 22,
     paddingBottom: 110,
+  },
+
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: "#1e88e5",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+    marginBottom: 12,
+    zIndex: 2,
   },
 
   logo: {

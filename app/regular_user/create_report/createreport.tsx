@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, SafeAreaView } from "react-native";
+import { Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import type { AttachmentMachineLearningStatus } from "../../../components/create_report/AttachmentMachineLearning";
 import { CreateReportFormContent } from "../../../components/create_report/CreateReportFormContent";
 import { GpsMapModal } from "../../../components/create_report/GpsMapModal";
@@ -27,7 +28,7 @@ export default function CreateReportScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <CreateReportFormContent
         address={form.address}
         attachments={form.attachments}
@@ -45,6 +46,7 @@ export default function CreateReportScreen() {
         onAttachmentReviewChange={setAttachmentReview}
         onPickAttachment={form.handlePickAttachment}
         onRemoveAttachment={form.handleRemoveAttachment}
+        onBack={() => router.replace("/regular_user/home")}
         onSubmit={handleSubmitPress}
         onUseGps={form.handleUseGps}
         onWaterMeterChange={form.setWaterMeter}

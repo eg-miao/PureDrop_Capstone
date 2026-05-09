@@ -6,12 +6,12 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { auth, db } from "../../firebaseConfig";
 
 type ReportItem = {
@@ -62,6 +62,7 @@ const toEpoch = (value: unknown) => {
 
 export default function ReportsListScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<ReportItem[]>([]);
 
@@ -165,12 +166,13 @@ export default function ReportsListScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <View style={[styles.header, { paddingTop: Math.max(20, insets.top + 10) }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.replace("/regular_user/home")}
           activeOpacity={0.85}
+          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
         >
           <Ionicons name="arrow-back" size={24} color="#ffffff" />
         </TouchableOpacity>
@@ -217,7 +219,6 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 20,
     paddingBottom: 12,
     flexDirection: "row",
     alignItems: "center",
@@ -235,6 +236,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1e88e5",
     alignItems: "center",
     justifyContent: "center",
+    zIndex: 2,
   },
   headerSpacer: {
     width: 40,

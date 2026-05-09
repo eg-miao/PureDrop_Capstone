@@ -4,12 +4,12 @@ import { useCallback } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   type NotificationItem,
   useReportNotifications,
@@ -37,6 +37,7 @@ const renderItem = ({ item }: { item: NotificationItem }) => (
 
 export default function NotificationScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { items, loading, markAllAsRead } = useReportNotifications();
 
   useFocusEffect(
@@ -46,10 +47,14 @@ export default function NotificationScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.animatedScreen}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.navigate("/regular_user/home")}>
+        <View style={[styles.header, { paddingTop: Math.max(8, insets.top + 2) }]}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.navigate("/regular_user/home")}
+            hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+          >
             <Ionicons name="chevron-back" size={22} color="#ffffff" />
           </TouchableOpacity>
 
@@ -92,7 +97,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingTop: 8,
     paddingBottom: 10,
   },
   backButton: {
@@ -102,6 +106,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#3b82f6",
+    zIndex: 2,
   },
   title: {
     color: "#ffffff",

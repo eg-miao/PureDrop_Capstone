@@ -7,13 +7,13 @@ import {
   ActivityIndicator,
   BackHandler,
   Image,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { auth, db } from "../../../firebaseConfig";
 
 type DetailedCommunityReport = {
@@ -41,6 +41,7 @@ const normalizeStatus = (value: unknown) => {
 
 export default function ViewAllReportsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { reportId, userId } = useLocalSearchParams<{ reportId?: string; userId?: string }>();
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<DetailedCommunityReport | null>(null);
@@ -135,7 +136,7 @@ export default function ViewAllReportsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#ffffff" />
         </View>
@@ -145,7 +146,7 @@ export default function ViewAllReportsScreen() {
 
   if (!report) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.centered}>
           <Text style={styles.emptyText}>Report not found.</Text>
           <TouchableOpacity style={styles.backButton} onPress={goToReportList}>
@@ -161,9 +162,14 @@ export default function ViewAllReportsScreen() {
     : require("../../../assets/images/default_account.png");
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity style={styles.topBack} onPress={goToReportList} activeOpacity={0.85}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: Math.max(16, insets.top + 6) }]}>
+        <TouchableOpacity
+          style={styles.topBack}
+          onPress={goToReportList}
+          activeOpacity={0.85}
+          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+        >
           <Ionicons name="arrow-back" size={26} color="#ffffff" />
         </TouchableOpacity>
 
@@ -231,7 +237,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingTop: 16,
     paddingBottom: 28,
   },
   centered: {
@@ -248,6 +253,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 18,
+    zIndex: 2,
   },
   card: {
     position: "relative",

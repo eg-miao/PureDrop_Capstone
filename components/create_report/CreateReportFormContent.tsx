@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   AttachmentMachineLearning,
   type AttachmentMachineLearningStatus,
@@ -20,6 +21,7 @@ type CreateReportFormContentProps = {
   submitLoading: boolean;
   waterMeter: string;
   onAddressChange: (value: string) => void;
+  onBack: () => void;
   onCategoryChange: (value: string) => void;
   onIssueChange: (value: string) => void;
   onLocationChange: (value: string) => void;
@@ -44,6 +46,7 @@ export function CreateReportFormContent({
   submitLoading,
   waterMeter,
   onAddressChange,
+  onBack,
   onCategoryChange,
   onIssueChange,
   onLocationChange,
@@ -55,6 +58,7 @@ export function CreateReportFormContent({
   onWaterMeterChange,
 }: CreateReportFormContentProps) {
   const [addressModalVisible, setAddressModalVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const mobileScrollProps = useMemo(() => {
     if (Platform.OS === "web") {
@@ -71,10 +75,22 @@ export function CreateReportFormContent({
     <>
       <ScrollView
         style={styles.formScroll}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: Math.max(22, insets.top + 10) },
+        ]}
         keyboardShouldPersistTaps="handled"
         {...mobileScrollProps}
       >
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={onBack}
+          activeOpacity={0.85}
+          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+        >
+          <Ionicons name="arrow-back" size={24} color="#ffffff" />
+        </TouchableOpacity>
+
         <Image
           source={require("../../assets/images/logo.png")}
           style={styles.logo}
