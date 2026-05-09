@@ -13,8 +13,8 @@ import {
 import {
   getSelectedAddress,
   setSelectedAddress,
-} from "./_addressSelectionStore";
-import { registerUser } from "./_functions/registerfunctions";
+} from "../../lib/login/addressSelectionStore";
+import { registerUser } from "../../lib/login/registerfunctions";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -130,7 +130,7 @@ export default function RegisterScreen() {
           secureTextEntry
         />
 
-        <Text style={styles.label}>Water Meter (m³)</Text>
+        <Text style={styles.label}>Water Meter (mÂ³)</Text>
         <TextInput
           style={styles.input}
           value={waterMeter}
@@ -220,3 +220,4 @@ const styles = StyleSheet.create({
     color: "#1E4F7A",
   },
 });
+

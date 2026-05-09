@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { getLoginErrorMessage } from "./_errors/logerror";
-import { loginUser } from "./_functions/loginfunctions";
+import { getLoginErrorMessage } from "../../lib/login/logerror";
+import { loginUser } from "../../lib/login/loginfunctions";
 
 export default function LoginScreen() {
   const router = useRouter();

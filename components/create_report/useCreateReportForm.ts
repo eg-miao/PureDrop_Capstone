@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Alert, Platform } from "react-native";
 import { collection, doc, getDoc, runTransaction, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { getPublicFileUrl, uploadFile } from "../../api/storage";
-import { autoCategorizeIssue } from "../../app/regular_user/assistant/assistant_api";
-import { getCurrentGpsLocation, getLocationFromCoordinates } from "../../app/regular_user/create_report/creategps";
+import { autoCategorizeIssue } from "../../lib/regular_user/assistant_api";
+import { getCurrentGpsLocation, getLocationFromCoordinates } from "../../lib/regular_user/creategps";
 import { auth, db } from "../../firebaseConfig";
 import type { Coordinate, Region } from "./MapPicker";
 
@@ -507,4 +507,3 @@ export function useCreateReportForm() {
     waterMeter,
   };
 }
-

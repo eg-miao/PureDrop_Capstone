@@ -92,7 +92,7 @@ export default function RegularUserLayout() {
           tabBarShowLabel: false,
           tabBarStyle: styles.tabBar,
           tabBarItemStyle: styles.tabItem,
-          lazy: false,
+          lazy: true,
         }}
       >
         <Tabs.Screen
@@ -229,5 +229,3 @@ const styles = StyleSheet.create({
     backgroundColor: "#e0f2fe",
   },
 });
-
-

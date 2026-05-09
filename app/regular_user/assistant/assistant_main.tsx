@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { askAssistantQuestion } from "./assistant_api";
+import { askAssistantQuestion } from "../../../lib/regular_user/assistant_api";
 
 type ChatMessage = {
   id: string;

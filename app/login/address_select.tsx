@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { setSelectedAddress } from "./_addressSelectionStore";
+import { setSelectedAddress } from "../../lib/login/addressSelectionStore";
 
 const CITY_SUFFIX = ", Toledo City";
 

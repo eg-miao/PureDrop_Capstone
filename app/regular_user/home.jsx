@@ -19,23 +19,48 @@ export default function MainPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        const userDocRef = doc(db, "regular_user", currentUser.uid);
-        const userSnap = await getDoc(userDocRef);
+        try {
+          const userDocRef = doc(db, "regular_user", currentUser.uid);
+          const userSnap = await getDoc(userDocRef);
 
-        if (userSnap.exists()) {
-          setUser({ uid: currentUser.uid, email: currentUser.email, ...userSnap.data() });
-        } else {
-          console.warn("User profile not found in Firestore");
+          if (!isMounted) {
+            return;
+          }
+
+          if (userSnap.exists()) {
+            setUser({ uid: currentUser.uid, email: currentUser.email, ...userSnap.data() });
+          } else {
+            setUser({ uid: currentUser.uid, email: currentUser.email });
+            console.warn("User profile not found in Firestore");
+          }
+        } catch (error) {
+          if (!isMounted) {
+            return;
+          }
+
+          setUser({ uid: currentUser.uid, email: currentUser.email });
+          console.warn("Failed to load user profile after login", error);
         }
       } else {
-        router.replace("/login/login");
+        if (isMounted) {
+          setUser(null);
+          router.replace("/login/login");
+        }
       }
-      setLoading(false);
+
+      if (isMounted) {
+        setLoading(false);
+      }
     });
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [router]);
 
   if (loading) {

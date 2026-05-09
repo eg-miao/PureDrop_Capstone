@@ -1,6 +1,6 @@
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { auth, db } from "../../../firebaseConfig";
+import { auth, db } from "../../firebaseConfig";
 
 interface RegisterParams {
   fullName: string;
