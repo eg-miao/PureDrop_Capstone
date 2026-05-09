@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, doc, onSnapshot } from "firebase/firestore";
@@ -166,10 +167,15 @@ export default function ReportsListScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>My Reports</Text>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.replace("/regular_user/home")}>
-          <Text style={styles.backButtonText}>Home</Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.replace("/regular_user/home")}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="arrow-back" size={24} color="#ffffff" />
         </TouchableOpacity>
+        <Text style={styles.title}>My Reports</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
       <FlatList
@@ -223,15 +229,15 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   backButton: {
-    backgroundColor: "#d8ecf6",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: "#1e88e5",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  backButtonText: {
-    color: "#0f172a",
-    fontSize: 14,
-    fontWeight: "600",
+  headerSpacer: {
+    width: 40,
   },
   listContent: {
     paddingHorizontal: 20,

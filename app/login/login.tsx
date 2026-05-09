@@ -1,8 +1,12 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -18,6 +22,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     try {
@@ -26,8 +31,6 @@ export default function LoginScreen() {
       await loginUser({ email, password });
 
       Alert.alert("Success", "Logged in successfully");
-
-      // You can check role here later if needed
       router.replace("/regular_user/home");
     } catch (err: unknown) {
       Alert.alert("Error", getLoginErrorMessage(err));
@@ -37,62 +40,91 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("../../assets/images/logo.png")}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-
-      <Text style={styles.subtitle}>Login to your Account</Text>
-
-      <View style={styles.form}>
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-      </View>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleLogin}
-        disabled={loading}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.buttonText}>
-          {loading ? "Logging in..." : "Login"}
-        </Text>
-      </TouchableOpacity>
+        <Image
+          source={require("../../assets/images/logo.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
 
-      <Text style={styles.footer}>Login to your Account</Text>
-    </View>
+        <Text style={styles.subtitle}>Login to your Account</Text>
+
+        <View style={styles.form}>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.passwordWrap}>
+            <TextInput
+              style={styles.passwordInput}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <TouchableOpacity
+              style={styles.eyeButton}
+              onPress={() => setShowPassword((prev) => !prev)}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                size={22}
+                color="#1E4F7A"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? "Logging in..." : "Login"}
+          </Text>
+        </TouchableOpacity>
+
+        <Text style={styles.footer}>Login to your Account</Text>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#4DA3FF",
+  },
+
+  scrollContent: {
+    flexGrow: 1,
     alignItems: "center",
-    paddingTop: 70,
+    paddingTop: 46,
+    paddingBottom: 32,
   },
 
   logo: {
     width: 140,
     height: 140,
     marginBottom: 14,
+    transform: [{ translateY: -20 }],
   },
 
   subtitle: {
@@ -119,6 +151,30 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     paddingHorizontal: 16,
     marginBottom: 14,
+  },
+
+  passwordWrap: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E9F8FF",
+    height: 42,
+    borderRadius: 22,
+    paddingLeft: 16,
+    paddingRight: 10,
+    marginBottom: 14,
+  },
+
+  passwordInput: {
+    flex: 1,
+    height: "100%",
+  },
+
+  eyeButton: {
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingLeft: 10,
   },
 
   button: {

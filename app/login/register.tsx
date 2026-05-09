@@ -1,9 +1,13 @@
-import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -26,6 +30,8 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [waterMeter, setWaterMeter] = useState<string>("0");
   const [loading, setLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -79,78 +85,117 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("../../assets/images/logo.png")}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-
-      <View style={styles.form}>
-        <Text style={styles.label}>Full Name (eg. Juan Dela Cruz)</Text>
-        <TextInput
-          style={styles.input}
-          value={fullName}
-          onChangeText={setFullName}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Image
+          source={require("../../assets/images/logo.png")}
+          style={styles.logo}
+          resizeMode="contain"
         />
 
-        <Text style={styles.label}>Address</Text>
+        <View style={styles.form}>
+          <Text style={styles.label}>Full Name (eg. Juan Dela Cruz)</Text>
+          <TextInput
+            style={styles.input}
+            value={fullName}
+            onChangeText={setFullName}
+          />
+
+          <Text style={styles.label}>Address</Text>
+          <TouchableOpacity
+            style={styles.input}
+            activeOpacity={0.8}
+            onPress={openAddressSelector}
+          >
+            <Text style={address ? styles.inputText : styles.placeholderText}>
+              {address || "Select your barangay"}
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.passwordWrap}>
+            <TextInput
+              style={styles.passwordInput}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <TouchableOpacity
+              style={styles.eyeButton}
+              onPress={() => setShowPassword((prev) => !prev)}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                size={22}
+                color="#1E4F7A"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.label}>Confirm Password</Text>
+          <View style={styles.passwordWrap}>
+            <TextInput
+              style={styles.passwordInput}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry={!showConfirmPassword}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <TouchableOpacity
+              style={styles.eyeButton}
+              onPress={() => setShowConfirmPassword((prev) => !prev)}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
+                size={22}
+                color="#1E4F7A"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.label}>Water Meter (m3)</Text>
+          <TextInput
+            style={styles.input}
+            value={waterMeter}
+            onChangeText={setWaterMeter}
+            keyboardType="numeric"
+          />
+        </View>
+
         <TouchableOpacity
-          style={styles.input}
-          activeOpacity={0.8}
-          onPress={openAddressSelector}
+          style={styles.button}
+          onPress={handleRegister}
+          disabled={loading}
         >
-          <Text style={address ? styles.inputText : styles.placeholderText}>
-            {address || "Select your barangay"}
+          <Text style={styles.buttonText}>
+            {loading ? "Registering..." : "Register"}
           </Text>
         </TouchableOpacity>
 
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-
-        <Text style={styles.label}>Confirm Password</Text>
-        <TextInput
-          style={styles.input}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-        />
-
-        <Text style={styles.label}>Water Meter (m³)</Text>
-        <TextInput
-          style={styles.input}
-          value={waterMeter}
-          onChangeText={setWaterMeter}
-          keyboardType="numeric"
-        />
-      </View>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleRegister}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? "Registering..." : "Register"}
-        </Text>
-      </TouchableOpacity>
-
-      <Text style={styles.footer}>Register your Account</Text>
-    </View>
+        <Text style={styles.footer}>Register your Account</Text>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -158,14 +203,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#4DA3FF",
+  },
+
+  scrollContent: {
+    flexGrow: 1,
     alignItems: "center",
-    paddingTop: 70,
+    paddingTop: 38,
+    paddingBottom: 32,
   },
 
   logo: {
     width: 140,
     height: 140,
     marginBottom: 20,
+    transform: [{ translateY: -30 }],
   },
 
   form: {
@@ -191,6 +242,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
+  passwordWrap: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E9F8FF",
+    height: 38,
+    borderRadius: 22,
+    paddingLeft: 16,
+    paddingRight: 10,
+    marginBottom: 14,
+  },
+
+  passwordInput: {
+    flex: 1,
+    height: "100%",
+  },
+
+  eyeButton: {
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingLeft: 10,
+  },
+
   inputText: {
     color: "#000",
   },
@@ -204,7 +279,7 @@ const styles = StyleSheet.create({
     width: 240,
     paddingVertical: 14,
     borderRadius: 30,
-    marginTop: 24,
+    marginTop: 50,
   },
 
   buttonText: {
@@ -220,4 +295,3 @@ const styles = StyleSheet.create({
     color: "#1E4F7A",
   },
 });
-
