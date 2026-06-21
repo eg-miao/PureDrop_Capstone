@@ -1,0 +1,10 @@
+project_id = "kfanwlpemesqvquypqvh"
+
+[functions.review-report-attachment]
+verify_jwt = false
+
+[functions.email-verification-otp]
+verify_jwt = false
+
+[functions.direct-password-reset]
+verify_jwt = false

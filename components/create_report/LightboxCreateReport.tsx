@@ -1,0 +1,223 @@
+import { useMemo, useState } from "react";
+import {
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+const CITY_SUFFIX = ", Toledo City";
+
+const BARANGAYS: string[] = [
+  "Awihao",
+  "Bagakay",
+  "Bato",
+  "Biga",
+  "Bulongan",
+  "Bunga",
+  "Cabitoonan",
+  "Calongcalong",
+  "Cambang-ug",
+  "Camp 8",
+  "Canlumampao",
+  "Cantabaco",
+  "Capitan Claudio",
+  "Carmen",
+  "Daanglungsod",
+  "Don Andres Soriano (Lutopan)",
+  "Dumlog",
+  "Ibo",
+  "Ilihan",
+  "Landahan",
+  "Loay",
+  "Luray II",
+  "Juan Climaco, Sr. (formerly Malubog)",
+  "Magdugo",
+  "Matab-ang",
+  "Media Once",
+  "Pangamihan",
+  "Pandong Bato",
+  "Poog",
+  "Putingbato",
+  "Sam-ang",
+  "Sangi",
+  "Santo Niño",
+  "Subayon",
+  "Tancor",
+  "Tubod",
+  "General Climaco",
+  "Poblacion",
+];
+
+type LightboxCreateReportProps = {
+  selectedAddress: string;
+  visible: boolean;
+  onClose: () => void;
+  onSelectAddress: (value: string) => void;
+};
+
+const getBaseBarangay = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  const suffixIndex = trimmed.toLowerCase().indexOf(CITY_SUFFIX.toLowerCase());
+  if (suffixIndex >= 0) {
+    return trimmed.slice(0, suffixIndex).replace(/,\s*$/, "").trim();
+  }
+
+  return trimmed;
+};
+
+export function LightboxCreateReport({
+  selectedAddress,
+  visible,
+  onClose,
+  onSelectAddress,
+}: LightboxCreateReportProps) {
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) {
+      return BARANGAYS;
+    }
+
+    return BARANGAYS.filter((item) => item.toLowerCase().includes(normalized));
+  }, [query]);
+
+  const selectedBarangay = getBaseBarangay(selectedAddress);
+
+  const handlePick = (barangay: string) => {
+    onSelectAddress(`${barangay}${CITY_SUFFIX}`);
+    onClose();
+  };
+
+  const handleClear = () => {
+    onSelectAddress("");
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        <View style={styles.lightbox}>
+          <Text style={styles.title}>Select Address</Text>
+
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            style={styles.searchInput}
+            placeholder="Search barangay"
+            placeholderTextColor="#94a3b8"
+          />
+
+          <FlatList
+            data={filtered}
+            keyExtractor={(item) => item}
+            style={styles.list}
+            keyboardShouldPersistTaps="handled"
+            renderItem={({ item }) => {
+              const isSelected = item === selectedBarangay;
+
+              return (
+                <TouchableOpacity
+                  style={[styles.item, isSelected && styles.itemSelected]}
+                  onPress={() => handlePick(item)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={[styles.itemText, isSelected && styles.itemTextSelected]}>{item}</Text>
+                </TouchableOpacity>
+              );
+            }}
+          />
+
+          <View style={styles.actions}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleClear}>
+              <Text style={styles.actionText}>Clear</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={onClose}>
+              <Text style={styles.actionText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.58)",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
+  lightbox: {
+    maxHeight: "80%",
+    borderRadius: 14,
+    backgroundColor: "#ffffff",
+    padding: 14,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0f172a",
+    marginBottom: 10,
+  },
+  searchInput: {
+    height: 40,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    paddingHorizontal: 10,
+    color: "#0f172a",
+    marginBottom: 10,
+  },
+  list: {
+    maxHeight: 330,
+  },
+  item: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#dbeafe",
+    backgroundColor: "#eff6ff",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+  itemSelected: {
+    borderColor: "#1d4ed8",
+    backgroundColor: "#dbeafe",
+  },
+  itemText: {
+    color: "#0f172a",
+    fontSize: 14,
+  },
+  itemTextSelected: {
+    fontWeight: "700",
+    color: "#1e3a8a",
+  },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 10,
+    marginTop: 6,
+  },
+  actionButton: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    backgroundColor: "#f8fafc",
+  },
+  actionText: {
+    color: "#0f172a",
+    fontWeight: "600",
+  },
+});
