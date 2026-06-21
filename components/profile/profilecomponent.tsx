@@ -1,7 +1,7 @@
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
   Image,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,

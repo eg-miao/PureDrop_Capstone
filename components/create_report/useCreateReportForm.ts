@@ -1,7 +1,7 @@
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import { useState } from "react";
-import { Alert, Platform } from "react-native";
+import { Alert } from "react-native";
 import { collection, doc, getDoc, runTransaction, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { getPublicFileUrl, uploadFile } from "../../api/storage";
 import { autoCategorizeIssue } from "../../lib/regular_user/assistant_api";
@@ -13,6 +13,7 @@ export type Attachment = {
   uri: string;
   mimeType?: string | null;
   fileName?: string | null;
+  base64Data?: string;
 };
 
 const TOLEDO_BARANGAYS = [
@@ -183,6 +184,7 @@ export function useCreateReportForm() {
       uri: stableUri,
       mimeType: picked.mimeType,
       fileName: picked.fileName,
+      base64Data: picked.base64 || undefined,
     };
   };
 
@@ -225,19 +227,15 @@ export function useCreateReportForm() {
         longitude: gpsResult.longitude,
       });
 
-      if (Platform.OS === "web") {
-        const pickedLocation = await getLocationFromCoordinates(
-          gpsResult.latitude,
-          gpsResult.longitude,
-        );
-        if (pickedLocation.isOutsideToledo) {
-          Alert.alert("Outside Toledo", "Your current location does not appear to be in Toledo City.");
-          return;
-        }
-        setGpsLocation(pickedLocation.formattedLocation);
-      } else {
-        setMapVisible(true);
+      const pickedLocation = await getLocationFromCoordinates(
+        gpsResult.latitude,
+        gpsResult.longitude,
+      );
+      if (pickedLocation.isOutsideToledo) {
+        Alert.alert("Outside Toledo", "Your current location does not appear to be in Toledo City.");
+        return;
       }
+      setGpsLocation(pickedLocation.formattedLocation);
     } catch (error) {
       if (error instanceof Error && error.message === "LOCATION_PERMISSION_DENIED") {
         Alert.alert("Permission needed", "Please allow location access to use GPS.");
@@ -293,9 +291,10 @@ export function useCreateReportForm() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       quality: 0.8,
       allowsMultipleSelection: false,
+      base64: true,
     });
 
     if (!result.canceled && result.assets.length > 0) {
@@ -404,6 +403,7 @@ export function useCreateReportForm() {
 
         const uploaded = await uploadFile(attachment.uri, destinationPath, {
           contentType: attachment.mimeType || getContentType(extension),
+          base64Data: attachment.base64Data,
         });
 
         const uploadedPath =

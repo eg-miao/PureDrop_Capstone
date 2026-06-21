@@ -1,6 +1,7 @@
 import { type Href, useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { auth } from "../../../firebaseConfig";
 import { markCurrentUserInactive } from "../status/RegularUserPresenceSync";
 

@@ -1,4 +1,3 @@
-import { Buffer } from "buffer";
 import * as FileSystem from "expo-file-system/legacy";
 import { Platform } from "react-native";
 import { FunctionsFetchError, FunctionsHttpError, FunctionsRelayError } from "@supabase/supabase-js";
@@ -33,6 +32,25 @@ type LegacyAttachmentAuthenticityRequest = {
 };
 
 const REVIEW_ATTACHMENT_FUNCTION = "review-report-attachment";
+const BASE64_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+const arrayBufferToBase64 = (arrayBuffer: ArrayBuffer) => {
+  const bytes = new Uint8Array(arrayBuffer);
+  let base64 = "";
+
+  for (let index = 0; index < bytes.length; index += 3) {
+    const first = bytes[index];
+    const second = bytes[index + 1];
+    const third = bytes[index + 2];
+
+    base64 += BASE64_ALPHABET[first >> 2];
+    base64 += BASE64_ALPHABET[((first & 3) << 4) | ((second ?? 0) >> 4)];
+    base64 += index + 1 < bytes.length ? BASE64_ALPHABET[((second & 15) << 2) | ((third ?? 0) >> 6)] : "=";
+    base64 += index + 2 < bytes.length ? BASE64_ALPHABET[third & 63] : "=";
+  }
+
+  return base64;
+};
 
 const getAttachmentExtension = (attachment: Attachment) => {
   const cleanFileName = attachment.fileName?.split("?")[0] ?? "";
@@ -117,7 +135,15 @@ const buildLegacyInvokeBody = async (
 
     const arrayBuffer = await response.arrayBuffer();
     return {
-      base64: Buffer.from(arrayBuffer).toString("base64"),
+      base64: arrayBufferToBase64(arrayBuffer),
+      fileName,
+      mimeType,
+    };
+  }
+
+  if (attachment.base64Data) {
+    return {
+      base64: attachment.base64Data,
       fileName,
       mimeType,
     };
@@ -201,7 +227,7 @@ export async function reviewAttachmentAuthenticity(
     throw new Error("Selected attachment is missing a file URI for authenticity review.");
   }
 
-  const body = await buildInvokeBody(attachment);
+  const body = Platform.OS === "web" ? await buildInvokeBody(attachment) : await buildLegacyInvokeBody(attachment);
   let { data, error, response } = await invokeReviewAttachment(body);
 
   if (error) {

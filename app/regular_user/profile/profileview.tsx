@@ -1,4 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system/legacy";
 import { type Href, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, onSnapshot, serverTimestamp, updateDoc } from "firebase/firestore";
@@ -11,6 +12,8 @@ import ProfileComponent, {
 import { auth, db } from "../../../firebaseConfig";
 
 const LOGIN_ROUTE = "/login" as Href;
+const LOCAL_AVATAR_URI_PATTERN = /^(file|content|ph|assets-library):/i;
+const PROFILE_AVATAR_CACHE_DIR = "profile-avatar";
 
 interface RegularUserDoc {
   fullName?: string;
@@ -62,6 +65,19 @@ export default function ProfileViewScreen() {
       default:
         return "application/octet-stream";
     }
+  };
+
+  const createStableAvatarUri = async (uri: string, extension: string) => {
+    if (!LOCAL_AVATAR_URI_PATTERN.test(uri) || !FileSystem.cacheDirectory) {
+      return { cached: false, uri };
+    }
+
+    const cacheDir = `${FileSystem.cacheDirectory}${PROFILE_AVATAR_CACHE_DIR}`;
+    const cachedUri = `${cacheDir}/avatar-${currentUserId}-${Date.now()}.${extension}`;
+    await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
+    await FileSystem.copyAsync({ from: uri, to: cachedUri });
+
+    return { cached: true, uri: cachedUri };
   };
 
   useEffect(() => {
@@ -152,6 +168,8 @@ export default function ProfileViewScreen() {
       return;
     }
 
+    let cachedAvatarUri: string | null = null;
+
     try {
       setUploadingAvatar(true);
       const userDocRef = doc(db, "regular_user", currentUserId);
@@ -163,11 +181,8 @@ export default function ProfileViewScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-        base64: true,
+        mediaTypes: ["images"],
+        quality: 0.7,
       });
 
       if (result.canceled || result.assets.length === 0) {
@@ -176,6 +191,11 @@ export default function ProfileViewScreen() {
 
       const selected = result.assets[0];
       const extension = getFileExtension(selected.uri, selected.mimeType);
+      const stableAvatar = await createStableAvatarUri(selected.uri, extension);
+      if (stableAvatar.cached) {
+        cachedAvatarUri = stableAvatar.uri;
+      }
+
       // Use a versioned object key so mobile image caches don't serve stale avatar bytes.
       const destinationPath = `${avatarFolder}/${currentUserId}/profile-image-${Date.now()}.${extension}`;
 
@@ -188,10 +208,9 @@ export default function ProfileViewScreen() {
           ? latestProfileData.profileImagePath
           : null;
 
-      const uploaded = await uploadFile(selected.uri, destinationPath, {
+      const uploaded = await uploadFile(stableAvatar.uri, destinationPath, {
         bucket: avatarBucket,
         contentType: selected.mimeType || getContentType(extension),
-        base64Data: selected.base64 || undefined,
       });
 
       const uploadedPath =
@@ -231,6 +250,11 @@ export default function ProfileViewScreen() {
         uploadError instanceof Error ? uploadError.message : "Failed to upload profile picture.";
       Alert.alert("Upload error", message);
     } finally {
+      if (cachedAvatarUri) {
+        void FileSystem.deleteAsync(cachedAvatarUri, { idempotent: true }).catch(() => {
+          // Cache cleanup failure should not block profile upload flow.
+        });
+      }
       setUploadingAvatar(false);
     }
   };

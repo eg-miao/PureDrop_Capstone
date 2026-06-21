@@ -1,4 +1,5 @@
-import { ActivityIndicator, Modal, SafeAreaView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, Modal, Text, TouchableOpacity, View } from "react-native";
 import { MapPicker, type Coordinate, type Region } from "./MapPicker";
 import { styles } from "./createReportStyles";
 

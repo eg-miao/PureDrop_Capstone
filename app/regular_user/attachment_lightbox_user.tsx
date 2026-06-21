@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const getSingleParam = (value: string | string[] | undefined) => {
   if (Array.isArray(value)) {

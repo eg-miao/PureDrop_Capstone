@@ -1,6 +1,28 @@
 import * as FileSystem from "expo-file-system/legacy";
-import { Buffer } from "buffer";
 import { supabase } from "./supabase";
+
+const BASE64_LOOKUP = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
+  const cleanBase64 = base64.replace(/\s/g, "");
+  const padding = cleanBase64.endsWith("==") ? 2 : cleanBase64.endsWith("=") ? 1 : 0;
+  const bytes = new Uint8Array((cleanBase64.length * 3) / 4 - padding);
+  let byteIndex = 0;
+
+  for (let index = 0; index < cleanBase64.length; index += 4) {
+    const first = BASE64_LOOKUP.indexOf(cleanBase64[index]);
+    const second = BASE64_LOOKUP.indexOf(cleanBase64[index + 1]);
+    const third = BASE64_LOOKUP.indexOf(cleanBase64[index + 2]);
+    const fourth = BASE64_LOOKUP.indexOf(cleanBase64[index + 3]);
+    const chunk = (first << 18) | (second << 12) | ((third & 63) << 6) | (fourth & 63);
+
+    if (byteIndex < bytes.length) bytes[byteIndex++] = (chunk >> 16) & 255;
+    if (byteIndex < bytes.length) bytes[byteIndex++] = (chunk >> 8) & 255;
+    if (byteIndex < bytes.length) bytes[byteIndex++] = chunk & 255;
+  }
+
+  return bytes.buffer;
+}
 
 type UploadFileOptions = {
   bucket?: string;
@@ -23,11 +45,6 @@ const readLocalFileAsBase64 = async (fileUri: string): Promise<string> => {
       "Unable to read the selected file from device storage."
     );
   }
-};
-
-const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
-  const buffer = Buffer.from(base64, "base64");
-  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 };
 
 const readLocalFileData = async (fileUri: string): Promise<ArrayBuffer> => {
@@ -62,8 +79,7 @@ const decodeBase64ToArrayBuffer = (base64Value: string): ArrayBuffer => {
     throw new Error("Attachment data is empty.");
   }
 
-  const buffer = Buffer.from(normalized, "base64");
-  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+  return base64ToArrayBuffer(normalized);
 };
 
 export async function uploadFile(
