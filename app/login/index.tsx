@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
@@ -15,6 +15,8 @@ import {
 } from "react-native";
 import { getLoginErrorMessage } from "../../lib/login/logerror";
 import { loginUser } from "../../lib/login/loginfunctions";
+
+const FORGOT_PASSWORD_ROUTE = "/login/forgot_password" as Href;
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -42,12 +44,15 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 24 : 0}
     >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
+        keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        style={styles.scrollView}
       >
         <Image
           source={require("../../assets/images/logo.png")}
@@ -74,6 +79,8 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
+              textContentType="password"
+              autoComplete="password"
               autoCapitalize="none"
               autoCorrect={false}
             />
@@ -81,6 +88,7 @@ export default function LoginScreen() {
               style={styles.eyeButton}
               onPress={() => setShowPassword((prev) => !prev)}
               activeOpacity={0.8}
+              accessibilityLabel={showPassword ? "Hide password" : "Show password"}
             >
               <Ionicons
                 name={showPassword ? "eye-off-outline" : "eye-outline"}
@@ -101,6 +109,14 @@ export default function LoginScreen() {
           </Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.forgotButton}
+          onPress={() => router.push(FORGOT_PASSWORD_ROUTE)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.forgotText}>Forgot Password?</Text>
+        </TouchableOpacity>
+
         <Text style={styles.footer}>Login to your Account</Text>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -116,15 +132,19 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     alignItems: "center",
-    paddingTop: 46,
-    paddingBottom: 32,
+    paddingTop: 28,
+    paddingBottom: 120,
+  },
+
+  scrollView: {
+    backgroundColor: "#4DA3FF",
   },
 
   logo: {
-    width: 140,
-    height: 140,
-    marginBottom: 14,
-    transform: [{ translateY: -20 }],
+    width: 128,
+    height: 128,
+    marginBottom: 6,
+    transform: [{ translateY: -18 }],
   },
 
   subtitle: {
@@ -151,6 +171,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     paddingHorizontal: 16,
     marginBottom: 14,
+    color: "#000000",
   },
 
   passwordWrap: {
@@ -168,6 +189,7 @@ const styles = StyleSheet.create({
   passwordInput: {
     flex: 1,
     height: "100%",
+    color: "#000000",
   },
 
   eyeButton: {
@@ -175,6 +197,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingLeft: 10,
+    minWidth: 38,
   },
 
   button: {
@@ -190,6 +213,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#000",
+  },
+
+  forgotButton: {
+    marginTop: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+
+  forgotText: {
+    color: "#1E4F7A",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
   },
 
   footer: {

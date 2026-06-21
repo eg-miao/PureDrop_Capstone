@@ -1,5 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, onSnapshot, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
@@ -9,6 +9,8 @@ import ProfileComponent, {
   type ProfileViewModel,
 } from "../../../components/profile/profilecomponent";
 import { auth, db } from "../../../firebaseConfig";
+
+const LOGIN_ROUTE = "/login" as Href;
 
 interface RegularUserDoc {
   fullName?: string;
@@ -76,7 +78,7 @@ export default function ProfileViewScreen() {
         if (isMounted) {
           setCurrentUserId(null);
           setProfileImagePath(null);
-          router.replace("/login/login");
+          router.replace(LOGIN_ROUTE);
           setLoading(false);
         }
         return;

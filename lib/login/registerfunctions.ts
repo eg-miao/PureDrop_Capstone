@@ -2,7 +2,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { auth, db } from "../../firebaseConfig";
 
-interface RegisterParams {
+export interface RegisterParams {
   fullName: string;
   address: string;
   email: string;
@@ -27,17 +27,19 @@ const normalizeAddress = (value: string): string => {
   return `${trimmed}${CITY_SUFFIX}`;
 };
 
-export async function registerUser({
+export function prepareRegistrationParams({
   fullName,
   address,
   email,
   password,
   confirmPassword,
   waterMeter,
-}: RegisterParams) {
+}: RegisterParams): RegisterParams {
   const formattedAddress = normalizeAddress(address);
+  const formattedFullName = fullName.trim();
+  const formattedEmail = email.trim();
 
-  if (!fullName || !formattedAddress || !email || !password) {
+  if (!formattedFullName || !formattedAddress || !formattedEmail || !password) {
     throw new Error("All fields are required");
   }
 
@@ -45,9 +47,28 @@ export async function registerUser({
     throw new Error("Passwords do not match");
   }
 
-  if (waterMeter < 0) {
+  if (!Number.isFinite(waterMeter) || waterMeter < 0) {
     throw new Error("Water meter must be non-negative");
   }
+
+  return {
+    fullName: formattedFullName,
+    address: formattedAddress,
+    email: formattedEmail,
+    password,
+    confirmPassword,
+    waterMeter,
+  };
+}
+
+export async function registerUser(params: RegisterParams) {
+  const {
+    fullName,
+    address,
+    email,
+    password,
+    waterMeter,
+  } = prepareRegistrationParams(params);
 
   const userCredential = await createUserWithEmailAndPassword(
     auth,
@@ -60,8 +81,9 @@ export async function registerUser({
   await setDoc(doc(db, "regular_user", user.uid), {
     uid: user.uid,
     fullName,
-    address: formattedAddress,
+    address,
     email,
+    emailVerified: true,
     role: "regular_user",
     status: "Inactive",
     presenceStatus: "Inactive",

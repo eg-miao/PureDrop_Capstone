@@ -29,7 +29,7 @@ export default function RegularUserLayout() {
         setProfileImageUrl(null);
         if (!redirectingRef.current) {
           redirectingRef.current = true;
-          router.replace("/login/login");
+          router.replace("/login");
         }
       } else {
         redirectingRef.current = false;

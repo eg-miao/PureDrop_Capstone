@@ -48,7 +48,7 @@ export default function MainPage() {
       } else {
         if (isMounted) {
           setUser(null);
-          router.replace("/login/login");
+          router.replace("/login");
         }
       }
 

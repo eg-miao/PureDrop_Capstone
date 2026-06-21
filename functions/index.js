@@ -1,6 +1,8 @@
 import { initializeApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
 import { logger } from "firebase-functions";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 
 initializeApp();
@@ -173,6 +175,66 @@ export const reviewReportAttachment = onCall(
           : "Unexpected server error during attachment authenticity review.";
 
       throw new HttpsError("internal", message, { message });
+    }
+  },
+);
+
+/**
+ * Directly updates the Firebase Auth user's password after OTP verification.
+ * Called from the forgot password flow after the user verifies their email via OTP.
+ */
+export const directPasswordReset = onRequest(
+  {
+    region: REGION,
+    maxInstances: 10,
+  },
+  async (req, res) => {
+    // Handle CORS preflight
+    res.set("Access-Control-Allow-Origin", "*");
+
+    if (req.method === "OPTIONS") {
+      res.set("Access-Control-Allow-Methods", "POST");
+      res.set("Access-Control-Allow-Headers", "Content-Type");
+      res.status(204).send("");
+      return;
+    }
+
+    if (req.method !== "POST") {
+      res.status(405).json({ error: "Method not allowed." });
+      return;
+    }
+
+    const { email, newPassword } = req.body || {};
+    const formattedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    const formattedPassword = typeof newPassword === "string" ? newPassword : "";
+
+    if (!formattedEmail) {
+      res.status(400).json({ error: "Email is required." });
+      return;
+    }
+
+    if (formattedPassword.length < 6) {
+      res.status(400).json({ error: "Password must be at least 6 characters." });
+      return;
+    }
+
+    try {
+      const userRecord = await getAuth().getUserByEmail(formattedEmail);
+      await getAuth().updateUser(userRecord.uid, { password: formattedPassword });
+      logger.info("directPasswordReset succeeded", { email: formattedEmail });
+      res.json({ success: true });
+    } catch (error) {
+      logger.error("directPasswordReset failed", {
+        email: formattedEmail,
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+
+      const message =
+        error instanceof Error && error.message.trim()
+          ? error.message.trim()
+          : "Could not reset password. Please try again.";
+
+      res.status(500).json({ error: message });
     }
   },
 );

@@ -1,10 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -18,10 +19,23 @@ import {
   getSelectedAddress,
   setSelectedAddress,
 } from "../../lib/login/addressSelectionStore";
-import { registerUser } from "../../lib/login/registerfunctions";
+import { sendEmailVerificationOtp } from "../../lib/login/emailVerificationOtp";
+import { setPendingRegistration } from "../../lib/login/pendingRegistrationStore";
+import { prepareRegistrationParams } from "../../lib/login/registerfunctions";
+
+const isMobile = Platform.OS !== "web";
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const scrollViewRef = useRef<ScrollView>(null);
+  const currentScrollYRef = useRef(0);
+  const waterMeterYRef = useRef(0);
+  const waterMeterReturnYRef = useRef(0);
+  const waterMeterFocusedRef = useRef(false);
+  const waterMeterUserScrolledRef = useRef(false);
+  const waterMeterScrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const [fullName, setFullName] = useState<string>("");
   const [address, setAddress] = useState<string>("");
@@ -32,6 +46,85 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const clearWaterMeterScrollTimeout = useCallback((): void => {
+    if (waterMeterScrollTimeoutRef.current) {
+      clearTimeout(waterMeterScrollTimeoutRef.current);
+      waterMeterScrollTimeoutRef.current = null;
+    }
+  }, []);
+
+  const scrollToWaterMeterPosition = useCallback((): void => {
+    const targetY = Math.max(waterMeterYRef.current - 130, 0);
+    scrollViewRef.current?.scrollTo({ y: targetY, animated: true });
+  }, []);
+
+  const scrollWaterMeterAboveKeyboard = useCallback((): void => {
+    if (isMobile) {
+      const wasAlreadyFocused = waterMeterFocusedRef.current;
+
+      waterMeterFocusedRef.current = true;
+
+      if (!wasAlreadyFocused) {
+        waterMeterUserScrolledRef.current = false;
+        waterMeterReturnYRef.current = currentScrollYRef.current;
+      }
+
+      clearWaterMeterScrollTimeout();
+
+      waterMeterScrollTimeoutRef.current = setTimeout(() => {
+        if (waterMeterFocusedRef.current && !waterMeterUserScrolledRef.current) {
+          scrollToWaterMeterPosition();
+        }
+      }, 250);
+    }
+  }, [clearWaterMeterScrollTimeout, scrollToWaterMeterPosition]);
+
+  const restoreWaterMeterScroll = useCallback((): void => {
+    clearWaterMeterScrollTimeout();
+
+    if (!waterMeterFocusedRef.current) {
+      return;
+    }
+
+    waterMeterFocusedRef.current = false;
+
+    if (waterMeterUserScrolledRef.current) {
+      waterMeterUserScrolledRef.current = false;
+      return;
+    }
+
+    scrollViewRef.current?.scrollTo({
+      y: waterMeterReturnYRef.current,
+      animated: true,
+    });
+  }, [clearWaterMeterScrollTimeout]);
+
+  useEffect(() => {
+    if (isMobile) {
+      const keyboardShowSubscription = Keyboard.addListener("keyboardDidShow", () => {
+        if (waterMeterFocusedRef.current && !waterMeterUserScrolledRef.current) {
+          scrollToWaterMeterPosition();
+        }
+      });
+      const keyboardHideSubscription = Keyboard.addListener(
+        "keyboardDidHide",
+        restoreWaterMeterScroll,
+      );
+
+      return () => {
+        keyboardShowSubscription.remove();
+        keyboardHideSubscription.remove();
+        clearWaterMeterScrollTimeout();
+      };
+    }
+
+    return undefined;
+  }, [
+    clearWaterMeterScrollTimeout,
+    restoreWaterMeterScroll,
+    scrollToWaterMeterPosition,
+  ]);
 
   useFocusEffect(
     useCallback(() => {
@@ -60,7 +153,7 @@ export default function RegisterScreen() {
         throw new Error("Water meter must be a valid non-negative number");
       }
 
-      await registerUser({
+      const pendingRegistration = prepareRegistrationParams({
         fullName,
         address,
         email,
@@ -69,8 +162,13 @@ export default function RegisterScreen() {
         waterMeter: waterMeterValue,
       });
 
-      Alert.alert("Success", "Account created successfully");
-      router.replace("/login/login");
+      setPendingRegistration(pendingRegistration);
+      await sendEmailVerificationOtp(pendingRegistration.email);
+
+      router.replace({
+        pathname: "/login/email_verification/verify_email",
+        params: { email: pendingRegistration.email },
+      });
     } catch (err: unknown) {
       let message = "Something went wrong";
 
@@ -87,11 +185,24 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 24 : 0}
     >
       <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={styles.scrollContent}
+        keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
+        onScroll={(event) => {
+          currentScrollYRef.current = event.nativeEvent.contentOffset.y;
+        }}
+        onScrollBeginDrag={() => {
+          if (waterMeterFocusedRef.current) {
+            waterMeterUserScrolledRef.current = true;
+            clearWaterMeterScrollTimeout();
+          }
+        }}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
         <Image
@@ -135,6 +246,8 @@ export default function RegisterScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
+              textContentType="newPassword"
+              autoComplete="new-password"
               autoCapitalize="none"
               autoCorrect={false}
             />
@@ -142,6 +255,7 @@ export default function RegisterScreen() {
               style={styles.eyeButton}
               onPress={() => setShowPassword((prev) => !prev)}
               activeOpacity={0.8}
+              accessibilityLabel={showPassword ? "Hide password" : "Show password"}
             >
               <Ionicons
                 name={showPassword ? "eye-off-outline" : "eye-outline"}
@@ -158,6 +272,8 @@ export default function RegisterScreen() {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry={!showConfirmPassword}
+              textContentType="newPassword"
+              autoComplete="new-password"
               autoCapitalize="none"
               autoCorrect={false}
             />
@@ -165,6 +281,7 @@ export default function RegisterScreen() {
               style={styles.eyeButton}
               onPress={() => setShowConfirmPassword((prev) => !prev)}
               activeOpacity={0.8}
+              accessibilityLabel={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
             >
               <Ionicons
                 name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
@@ -174,13 +291,22 @@ export default function RegisterScreen() {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.label}>Water Meter (m3)</Text>
-          <TextInput
-            style={styles.input}
-            value={waterMeter}
-            onChangeText={setWaterMeter}
-            keyboardType="numeric"
-          />
+          <View
+            style={styles.fieldGroup}
+            onLayout={(event) => {
+              waterMeterYRef.current = event.nativeEvent.layout.y;
+            }}
+          >
+            <Text style={styles.label}>Water Meter (m3)</Text>
+            <TextInput
+              style={styles.input}
+              value={waterMeter}
+              onChangeText={setWaterMeter}
+              onFocus={scrollWaterMeterAboveKeyboard}
+              onPressIn={scrollWaterMeterAboveKeyboard}
+              keyboardType="numeric"
+            />
+          </View>
         </View>
 
         <TouchableOpacity
@@ -189,7 +315,7 @@ export default function RegisterScreen() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>
-            {loading ? "Registering..." : "Register"}
+            {loading ? "Sending code..." : "Register"}
           </Text>
         </TouchableOpacity>
 
@@ -208,25 +334,29 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     alignItems: "center",
-    paddingTop: 38,
-    paddingBottom: 32,
+    paddingTop: 24,
+    paddingBottom: 220,
   },
 
   logo: {
-    width: 140,
-    height: 140,
-    marginBottom: 20,
-    transform: [{ translateY: -30 }],
+    width: 128,
+    height: 128,
+    marginBottom: 0,
+    transform: [{ translateY: -10 }],
   },
 
   form: {
     width: "80%",
   },
 
+  fieldGroup: {
+    width: "100%",
+  },
+
   label: {
     color: "#EAF7FF",
     fontSize: 13,
-    marginBottom: 6,
+    marginBottom: 4,
     marginLeft: 8,
     textAlign: "center",
   },
@@ -238,8 +368,9 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     borderRadius: 22,
     paddingHorizontal: 16,
-    marginBottom: 14,
+    marginBottom: 10,
     justifyContent: "center",
+    color: "#000000",
   },
 
   passwordWrap: {
@@ -251,12 +382,13 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     paddingLeft: 16,
     paddingRight: 10,
-    marginBottom: 14,
+    marginBottom: 10,
   },
 
   passwordInput: {
     flex: 1,
     height: "100%",
+    color: "#000000",
   },
 
   eyeButton: {
@@ -264,6 +396,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingLeft: 10,
+    minWidth: 38,
   },
 
   inputText: {
@@ -279,7 +412,7 @@ const styles = StyleSheet.create({
     width: 240,
     paddingVertical: 14,
     borderRadius: 30,
-    marginTop: 50,
+    marginTop: 28,
   },
 
   buttonText: {
@@ -290,7 +423,7 @@ const styles = StyleSheet.create({
   },
 
   footer: {
-    marginTop: 28,
+    marginTop: 18,
     fontSize: 14,
     color: "#1E4F7A",
   },

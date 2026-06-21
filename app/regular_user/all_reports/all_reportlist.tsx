@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import {
   collectionGroup,
@@ -21,6 +21,8 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import AllRepComponent, { type AllReportListItem } from "../../../components/all_reports/all_repcomponent";
 import { auth, db } from "../../../firebaseConfig";
+
+const LOGIN_ROUTE = "/login" as Href;
 
 type UserProfileCache = Record<
   string,
@@ -86,7 +88,7 @@ export default function AllReportListScreen() {
       if (!currentUser) {
         setReports([]);
         setLoading(false);
-        router.replace("/login/login");
+        router.replace(LOGIN_ROUTE);
         return;
       }
 
