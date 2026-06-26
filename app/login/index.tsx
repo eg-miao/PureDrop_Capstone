@@ -60,7 +60,6 @@ export default function LoginScreen() {
           resizeMode="contain"
         />
 
-        <Text style={styles.subtitle}>Login to your Account</Text>
 
         <View style={styles.form}>
           <Text style={styles.label}>Email</Text>
