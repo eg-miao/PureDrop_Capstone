@@ -55,7 +55,7 @@ export default function NotificationScreen() {
             onPress={() => router.navigate("/regular_user/home")}
             hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
           >
-            <Ionicons name="chevron-back" size={22} color="#ffffff" />
+            <Ionicons name="chevron-back" size={24} color="#0F172A" />
           </TouchableOpacity>
 
           <Text style={styles.title}>Notifications</Text>
@@ -87,7 +87,7 @@ export default function NotificationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#5aa0f2",
+    backgroundColor: "#F8FAFC",
   },
   animatedScreen: {
     flex: 1,
@@ -96,62 +96,73 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingBottom: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 12,
   },
   backButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#3b82f6",
+    backgroundColor: "#FFFFFF",
     zIndex: 2,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
   title: {
-    color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "700",
+    color: "#0F172A",
+    fontSize: 20,
+    fontWeight: "800",
   },
   badgeWrap: {
-    width: 34,
+    width: 40,
     alignItems: "flex-end",
   },
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingBottom: 24,
-    gap: 10,
+    gap: 12,
   },
   card: {
-    backgroundColor: "#e5e7eb",
-    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#ffffff",
-    padding: 12,
+    borderColor: "#E2E8F0",
+    padding: 16,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   rowBetween: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 10,
   },
   reportId: {
-    color: "#111827",
-    fontSize: 14,
-    fontWeight: "700",
+    color: "#0F172A",
+    fontSize: 15,
+    fontWeight: "800",
   },
   status: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "700",
   },
   message: {
-    color: "#1f2937",
-    fontSize: 13,
-    marginBottom: 6,
+    color: "#475569",
+    fontSize: 14,
+    marginBottom: 8,
+    lineHeight: 20,
   },
   date: {
-    color: "#6b7280",
-    fontSize: 11,
+    color: "#94A3B8",
+    fontSize: 12,
   },
   centered: {
     flex: 1,
@@ -160,14 +171,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   emptyTitle: {
-    color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 6,
+    color: "#0F172A",
+    fontSize: 20,
+    fontWeight: "800",
+    marginBottom: 8,
   },
   emptySub: {
-    color: "#e5efff",
-    fontSize: 13,
+    color: "#475569",
+    fontSize: 14,
     textAlign: "center",
   },
 });

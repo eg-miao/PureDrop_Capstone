@@ -60,6 +60,8 @@ export default function LoginScreen() {
           resizeMode="contain"
         />
 
+        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.subtitle}>Login to continue</Text>
 
         <View style={styles.form}>
           <Text style={styles.label}>Email</Text>
@@ -92,7 +94,7 @@ export default function LoginScreen() {
               <Ionicons
                 name={showPassword ? "eye-off-outline" : "eye-outline"}
                 size={22}
-                color="#1E4F7A"
+                color="#475569"
               />
             </TouchableOpacity>
           </View>
@@ -125,70 +127,84 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#4DA3FF",
+    backgroundColor: "#F8FAFC",
   },
 
   scrollContent: {
     flexGrow: 1,
     alignItems: "center",
-    paddingTop: 28,
+    paddingTop: 48,
     paddingBottom: 120,
+    paddingHorizontal: 24,
   },
 
   scrollView: {
-    backgroundColor: "#4DA3FF",
+    backgroundColor: "#F8FAFC",
   },
 
   logo: {
-    width: 128,
-    height: 128,
-    marginBottom: 6,
-    transform: [{ translateY: -18 }],
+    width: 120,
+    height: 120,
+    marginBottom: 24,
+  },
+
+  title: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#0F172A",
+    marginBottom: 8,
   },
 
   subtitle: {
-    fontSize: 14,
-    color: "#1E4F7A",
-    marginBottom: 18,
+    fontSize: 16,
+    color: "#64748B",
+    marginBottom: 32,
   },
 
   form: {
-    width: "80%",
+    width: "100%",
   },
 
   label: {
-    color: "#EAF7FF",
-    fontSize: 13,
-    marginBottom: 6,
-    marginLeft: 8,
-    textAlign: "center",
+    color: "#475569",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+    marginLeft: 4,
+    textAlign: "left",
   },
 
   input: {
-    backgroundColor: "#E9F8FF",
-    height: 42,
-    borderRadius: 22,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    height: 52,
+    borderRadius: 12,
     paddingHorizontal: 16,
-    marginBottom: 14,
-    color: "#000000",
+    marginBottom: 20,
+    color: "#0F172A",
+    fontSize: 16,
   },
 
   passwordWrap: {
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E9F8FF",
-    height: 42,
-    borderRadius: 22,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    height: 52,
+    borderRadius: 12,
     paddingLeft: 16,
     paddingRight: 10,
-    marginBottom: 14,
+    marginBottom: 20,
   },
 
   passwordInput: {
     flex: 1,
     height: "100%",
-    color: "#000000",
+    color: "#0F172A",
+    fontSize: 16,
   },
 
   eyeButton: {
@@ -200,36 +216,43 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: "#A8F0C6",
-    width: 240,
-    paddingVertical: 14,
-    borderRadius: 30,
-    marginTop: 24,
+    backgroundColor: "#0EA5E9",
+    width: "100%",
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   buttonText: {
     textAlign: "center",
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#000",
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
 
   forgotButton: {
-    marginTop: 14,
+    marginTop: 24,
     paddingVertical: 8,
     paddingHorizontal: 12,
   },
 
   forgotText: {
-    color: "#1E4F7A",
-    fontSize: 14,
+    color: "#0EA5E9",
+    fontSize: 15,
     fontWeight: "600",
     textAlign: "center",
   },
 
   footer: {
-    marginTop: 28,
+    marginTop: "auto",
     fontSize: 14,
-    color: "#1E4F7A",
+    color: "#94A3B8",
   },
 });

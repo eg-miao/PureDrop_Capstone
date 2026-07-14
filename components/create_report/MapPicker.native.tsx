@@ -1,4 +1,4 @@
-import MapView, { Marker, type MapPressEvent } from "react-native-maps";
+import MapView, { type Region as MapRegion } from "react-native-maps";
 import type { StyleProp, ViewStyle } from "react-native";
 
 export type Coordinate = {
@@ -14,18 +14,21 @@ export type Region = Coordinate & {
 type MapPickerProps = {
   style?: StyleProp<ViewStyle>;
   initialRegion: Region;
-  selectedPin: Coordinate | null;
-  onPress: (coordinate: Coordinate) => void;
+  onRegionChangeComplete: (region: Region) => void;
 };
 
-export function MapPicker({ style, initialRegion, selectedPin, onPress }: MapPickerProps) {
-  const handlePress = (event: MapPressEvent) => {
-    onPress(event.nativeEvent.coordinate);
+export function MapPicker({ style, initialRegion, onRegionChangeComplete }: MapPickerProps) {
+  const handleRegionChangeComplete = (region: MapRegion) => {
+    onRegionChangeComplete(region);
   };
 
   return (
-    <MapView style={style} initialRegion={initialRegion} onPress={handlePress}>
-      {selectedPin ? <Marker coordinate={selectedPin} /> : null}
-    </MapView>
+    <MapView 
+      style={style} 
+      initialRegion={initialRegion} 
+      onRegionChangeComplete={handleRegionChangeComplete}
+      showsUserLocation={true}
+      showsMyLocationButton={true}
+    />
   );
 }

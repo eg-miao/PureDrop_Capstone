@@ -174,7 +174,7 @@ export default function ReportsListScreen() {
           activeOpacity={0.85}
           hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
         >
-          <Ionicons name="arrow-back" size={24} color="#ffffff" />
+          <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
         <Text style={styles.title}>My Reports</Text>
         <View style={styles.headerSpacer} />
@@ -210,7 +210,7 @@ export default function ReportsListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#5a9ae6",
+    backgroundColor: "#F8FAFC",
   },
   centered: {
     flex: 1,
@@ -219,58 +219,71 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingBottom: 12,
+    paddingBottom: 20,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
   title: {
-    color: "#ffffff",
-    fontSize: 28,
-    fontWeight: "700",
+    color: "#0F172A",
+    fontSize: 24,
+    fontWeight: "800",
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 10,
-    backgroundColor: "#1e88e5",
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
   headerSpacer: {
     width: 40,
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingBottom: 28,
-    gap: 12,
+    paddingBottom: 40,
+    gap: 16,
   },
   card: {
-    backgroundColor: "#d8ecf6",
-    borderRadius: 10,
-    padding: 14,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    padding: 20,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   cardTitle: {
-    color: "#0f172a",
-    fontSize: 16,
+    color: "#0F172A",
+    fontSize: 18,
     fontWeight: "700",
     marginBottom: 6,
   },
   cardIssue: {
-    color: "#0f172a",
+    color: "#475569",
     fontSize: 14,
-    marginBottom: 8,
+    marginBottom: 12,
+    lineHeight: 20,
   },
   metaText: {
-    color: "#334155",
-    fontSize: 12,
+    color: "#64748B",
+    fontSize: 13,
+    marginTop: 4,
   },
   emptyText: {
-    color: "#ffffff",
-    opacity: 0.9,
+    color: "#64748B",
     textAlign: "center",
-    marginTop: 30,
+    marginTop: 40,
     fontSize: 16,
   },
 });

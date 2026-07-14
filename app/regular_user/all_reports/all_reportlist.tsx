@@ -225,7 +225,7 @@ export default function AllReportListScreen() {
           activeOpacity={0.85}
           hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
         >
-          <Ionicons name="arrow-back" size={24} color="#ffffff" />
+          <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
         <Text style={styles.title}>Report Lists</Text>
       </View>
@@ -258,8 +258,8 @@ export default function AllReportListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#5a9ae6",
-    paddingHorizontal: 16,
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 20,
   },
   centered: {
     flex: 1,
@@ -269,40 +269,46 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 12,
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 10,
-    backgroundColor: "#1e88e5",
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginRight: 16,
     zIndex: 2,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
   title: {
-    color: "#ffffff",
-    fontSize: 40,
-    fontWeight: "500",
+    color: "#0F172A",
+    fontSize: 24,
+    fontWeight: "800",
   },
   monthText: {
-    color: "#cfe6ff",
-    fontSize: 24,
-    marginBottom: 12,
+    color: "#475569",
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 16,
     marginLeft: 4,
   },
   listContent: {
     paddingBottom: 24,
   },
   emptyText: {
-    color: "#ffffff",
+    color: "#475569",
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 14,
     marginTop: 30,
   },
   errorText: {
-    color: "#fee2e2",
+    color: "#ef4444",
     fontSize: 13,
     marginBottom: 10,
   },

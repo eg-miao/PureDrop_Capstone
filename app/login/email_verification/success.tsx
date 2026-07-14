@@ -33,7 +33,7 @@ export default function EmailVerificationSuccessScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#55A3F0",
+    backgroundColor: "#f0f9ff",
   },
 
   content: {
@@ -45,13 +45,13 @@ const styles = StyleSheet.create({
   },
 
   checkCircle: {
-    width: 142,
-    height: 142,
+    width: 120,
+    height: 120,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#27D77B",
-    borderRadius: 71,
-    marginBottom: 46,
+    backgroundColor: "#10b981",
+    borderRadius: 16,
+    marginBottom: 36,
     overflow: "hidden",
   },
 
@@ -61,32 +61,31 @@ const styles = StyleSheet.create({
     bottom: -26,
     width: 96,
     height: 96,
-    backgroundColor: "rgba(0, 145, 85, 0.26)",
+    backgroundColor: "rgba(0, 145, 85, 0.15)",
     transform: [{ rotate: "45deg" }],
   },
 
   title: {
-    color: "#FFFFFF",
+    color: "#0f172a",
     fontSize: 24,
-    fontWeight: "400",
-    lineHeight: 28,
+    fontWeight: "700",
+    lineHeight: 32,
     textAlign: "center",
     marginBottom: 36,
   },
 
   button: {
-    backgroundColor: "#A8F0C6",
+    backgroundColor: "#0284c7",
     width: 240,
     paddingVertical: 14,
-    borderRadius: 30,
-    marginTop: 50,
+    borderRadius: 6,
+    marginTop: 30,
   },
-
 
   buttonText: {
     textAlign: "center",
     fontSize: 16,
     fontWeight: "600",
-    color: "#000",
+    color: "#ffffff",
   },
 });

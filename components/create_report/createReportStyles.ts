@@ -1,393 +1,452 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform, Dimensions } from "react-native";
+
+const { width } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#5a9ae6",
+    backgroundColor: "#F1F5F9",
   },
-
   formScroll: {
     flex: 1,
   },
-
   content: {
     flexGrow: 1,
-    paddingHorizontal: 28,
+    paddingHorizontal: 20,
     paddingBottom: 110,
   },
 
+  // Header
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 10,
-    backgroundColor: "#1e88e5",
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  pageTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+
+  // Cards
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0F172A",
+    marginBottom: 16,
+    letterSpacing: -0.3,
+  },
+
+  // Category Selector
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#0F172A",
     marginBottom: 12,
-    zIndex: 2,
+    marginLeft: 4,
   },
-
-  logo: {
-    width: 98,
-    height: 98,
-    alignSelf: "center",
-    resizeMode: "contain",
-    marginBottom: 14,
-  },
-
-  label: {
-    color: "#cfe6ff",
-    fontSize: 11,
-    marginBottom: 6,
-  },
-
   categoryRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 14,
+    paddingBottom: 24,
+    gap: 12,
   },
-
-  categoryOption: {
-    borderRadius: 7,
-    backgroundColor: "#d8ecf6",
+  categoryPill: {
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 100,
     borderWidth: 1,
-    borderColor: "#b9d8ef",
-    paddingVertical: 9,
-    paddingHorizontal: 12,
+    borderColor: "#E2E8F0",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
   },
-
-  categoryOptionSelected: {
-    backgroundColor: "#1e40af",
-    borderColor: "#dbeafe",
+  categoryPillSelected: {
+    backgroundColor: "#0EA5E9",
+    borderColor: "#0EA5E9",
   },
-
-  categoryOptionText: {
-    color: "#0f172a",
-    fontSize: 12,
+  categoryPillText: {
+    fontSize: 14,
     fontWeight: "600",
+    color: "#475569",
+  },
+  categoryPillTextSelected: {
+    color: "#FFFFFF",
   },
 
-  categoryOptionTextSelected: {
-    color: "#ffffff",
+  // Inputs
+  label: {
+    color: "#475569",
+    fontSize: 13,
+    fontWeight: "700",
+    marginBottom: 8,
   },
-
   input: {
-    height: 36,
-    borderRadius: 7,
-    backgroundColor: "#d8ecf6",
-    marginBottom: 14,
-    paddingHorizontal: 10,
-    color: "#0f172a",
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginBottom: 20,
+    paddingHorizontal: 16,
+    color: "#0F172A",
+    justifyContent: "center",
   },
-
+  textArea: {
+    height: 120,
+    borderRadius: 12,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    color: "#0F172A",
+    marginBottom: 20,
+    fontSize: 15,
+  },
+  
+  // Address Picker
   addressPickerTrigger: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-
   addressPickerValue: {
-    color: "#0f172a",
+    color: "#0F172A",
+    fontSize: 15,
     flex: 1,
     marginRight: 8,
   },
-
   addressPickerPlaceholder: {
-    color: "#7da8d8",
+    color: "#94A3B8",
+    fontSize: 15,
     flex: 1,
     marginRight: 8,
   },
 
-  gpsInput: {
-    opacity: 0.85,
+  // GPS & Mini Map
+  gpsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
-
-  featuresTitle: {
-    color: "#e2f0ff",
-    fontSize: 12,
+  repickText: {
+    color: "#0EA5E9",
+    fontSize: 13,
     fontWeight: "600",
-    marginTop: 2,
   },
-
-  featureRow: {
-    marginBottom: 12,
-  },
-
-  featureItem: {
-    color: "#e2f0ff",
-    fontSize: 11,
-    marginTop: 3,
-    marginBottom: 4,
-  },
-
   featureButton: {
-    height: 42,
-    borderRadius: 9,
-    backgroundColor: "#d8ecf6",
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: "#F0F9FF",
     borderWidth: 1,
-    borderColor: "#b9d8ef",
-    paddingHorizontal: 12,
+    borderColor: "#BAE6FD",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
   },
-
   featureButtonLoading: {
     opacity: 0.7,
   },
-
   featureButtonText: {
-    color: "#0f172a",
-    fontSize: 12,
+    color: "#0EA5E9",
+    fontSize: 14,
     fontWeight: "700",
-    letterSpacing: 0.2,
   },
-
-  issueLabel: {
-    marginTop: 2,
-  },
-
-  issueHeaderRow: {
-    marginTop: 2,
-    marginBottom: 6,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
-  },
-
-  autoCategoryButton: {
-    height: 30,
-    borderRadius: 7,
-    backgroundColor: "#d8ecf6",
+  miniMapContainer: {
+    height: 180,
+    borderRadius: 16,
+    overflow: "hidden",
     borderWidth: 1,
-    borderColor: "#b9d8ef",
-    paddingHorizontal: 10,
+    borderColor: "#E2E8F0",
+    position: "relative",
+  },
+  miniMap: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  miniMapOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     gap: 6,
+    borderTopWidth: 1,
+    borderTopColor: "#E2E8F0",
+  },
+  miniMapAddressText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#334155",
+    flex: 1,
   },
 
-  autoCategoryButtonText: {
-    color: "#0f172a",
-    fontSize: 11,
-    fontWeight: "700",
+  // Attachments
+  attachmentsText: {
+    color: "#64748B",
+    fontSize: 13,
+    marginBottom: 16,
+    marginTop: -10,
   },
-
-  textArea: {
-    height: 112,
-    borderRadius: 7,
-    backgroundColor: "#d8ecf6",
-    paddingHorizontal: 10,
-    paddingTop: 10,
-    color: "#0f172a",
-  },
-
-  uploadButton: {
-    marginTop: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 6,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
   attachmentRow: {
     flexDirection: "row",
-    gap: 8,
-    marginTop: 8,
-    minHeight: 52,
+    gap: 12,
+    flexWrap: "wrap",
   },
-
   attachmentCard: {
     position: "relative",
   },
-
   attachmentPreview: {
-    width: 48,
-    height: 48,
-    borderRadius: 6,
+    width: 80,
+    height: 80,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#cfe6ff",
+    borderColor: "#E2E8F0",
   },
-
   removeButton: {
     position: "absolute",
     top: -6,
     right: -6,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: "#ef4444",
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#EF4444",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+  },
+  uploadButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 16,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
   },
+  uploadButtonText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#94A3B8",
+    marginTop: 4,
+  },
 
-  removeButtonText: {
-    color: "#ffffff",
-    fontSize: 9,
+  // Submit Button
+  submitButton: {
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: "#0EA5E9",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 6,
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  submitText: {
+    color: "#FFFFFF",
+    fontSize: 16,
     fontWeight: "700",
-    lineHeight: 10,
+    letterSpacing: 0.5,
   },
-
-  attachmentsText: {
-    color: "#d6e8ff",
-    fontSize: 11,
-    marginTop: 10,
-  },
-
+  
+  // Keep required legacy styles for AttachmentMachineLearning component
   attachmentMlCard: {
-    marginTop: 12,
-    borderRadius: 10,
-    backgroundColor: "#d8ecf6",
+    marginTop: 16,
+    borderRadius: 12,
+    backgroundColor: "#F8FAFC",
     borderWidth: 1,
-    borderColor: "#b9d8ef",
-    padding: 12,
+    borderColor: "#E2E8F0",
+    padding: 16,
     gap: 8,
   },
-
   attachmentMlHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
-
   attachmentMlTitle: {
-    color: "#0f172a",
-    fontSize: 12,
+    color: "#0F172A",
+    fontSize: 14,
     fontWeight: "700",
   },
-
   attachmentMlLoadingRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
-
   attachmentMlSummary: {
-    color: "#334155",
-    fontSize: 11,
-    lineHeight: 16,
+    color: "#475569",
+    fontSize: 13,
+    lineHeight: 18,
   },
-
   attachmentMlItem: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 8,
     borderRadius: 8,
     borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 9,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 4,
   },
-
   attachmentMlItemPassed: {
-    backgroundColor: "#ecfdf5",
-    borderColor: "#bbf7d0",
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
   },
-
   attachmentMlItemWarning: {
-    backgroundColor: "#fffbeb",
-    borderColor: "#fde68a",
+    backgroundColor: "#FFFBEB",
+    borderColor: "#FDE68A",
   },
-
   attachmentMlItemBlocked: {
-    backgroundColor: "#fef2f2",
-    borderColor: "#fecaca",
+    backgroundColor: "#FEF2F2",
+    borderColor: "#FECACA",
   },
-
   attachmentMlItemText: {
     flex: 1,
     color: "#334155",
-    fontSize: 11,
-    lineHeight: 16,
+    fontSize: 12,
+    lineHeight: 18,
   },
 
-  submitButton: {
-    marginTop: 24,
-    marginBottom: 8,
-    alignSelf: "center",
-    width: "92%",
-    height: 48,
-    borderRadius: 10,
-    backgroundColor: "#89e2bb",
-    borderWidth: 2,
-    borderColor: "#d7f7e8",
+  // Map Picker Redesign (Full Screen)
+  fullScreenMapContainer: {
+    flex: 1,
+    backgroundColor: "#F1F5F9",
+    position: "relative",
+  },
+  fullScreenMap: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  centerPinContainer: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    marginLeft: -20, // half of icon size
+    marginTop: -40,  // full icon size to point to exact center
     alignItems: "center",
     justifyContent: "center",
+    zIndex: 10,
   },
-
-  submitText: {
-    color: "#0b1f1a",
-    fontSize: 28,
-    fontWeight: "400",
+  centerPinIconWrap: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 8,
   },
-
-  mapContainer: {
-    flex: 1,
-    backgroundColor: "#ffffff",
+  centerPinShadow: {
+    width: 12,
+    height: 4,
+    backgroundColor: "rgba(0,0,0,0.2)",
+    borderRadius: 6,
+    transform: [{ scaleX: 2 }],
+    marginTop: -2,
   },
-
-  mapHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
-  },
-
-  mapTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#0f172a",
-  },
-
-  map: {
-    flex: 1,
-  },
-
-  mapActions: {
+  floatingTopBar: {
+    position: "absolute",
+    left: 20,
+    right: 20,
+    zIndex: 20,
     flexDirection: "row",
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#e5e7eb",
-    backgroundColor: "#ffffff",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-
-  mapCancelButton: {
-    flex: 1,
+  floatingCloseButton: {
+    width: 44,
     height: 44,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
+    borderRadius: 22,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
-
-  mapCancelText: {
-    color: "#0f172a",
+  floatingBottomBar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
+    paddingHorizontal: 20,
+  },
+  floatingConfirmPanel: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+    alignItems: "center",
+  },
+  floatingInstructionText: {
+    color: "#64748B",
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "500",
+    textAlign: "center",
+    marginBottom: 16,
+    paddingHorizontal: 10,
+    lineHeight: 20,
   },
-
-  mapConfirmButton: {
-    flex: 1,
-    height: 44,
-    borderRadius: 8,
-    backgroundColor: "#86efac",
+  floatingConfirmButton: {
+    height: 56,
+    width: "100%",
+    borderRadius: 16,
+    backgroundColor: "#0F172A",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 8,
   },
-
-  mapConfirmText: {
-    color: "#0b1f1a",
-    fontSize: 14,
+  floatingConfirmText: {
+    color: "#FFFFFF",
+    fontSize: 16,
     fontWeight: "700",
+    letterSpacing: 0.5,
   },
 });

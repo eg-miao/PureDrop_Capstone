@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
@@ -75,23 +76,39 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.buttonStack}>
-          <TouchableOpacity style={styles.actionButton}
-          onPress={() => router.push("/regular_user/profile/profileview")}>
-            <Text style={styles.actionText}>Profile</Text>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => router.push("/regular_user/profile/profileview")}
+            activeOpacity={0.7}
+          >
+            <View style={styles.actionLeft}>
+              <Ionicons name="person-outline" size={22} color="#0EA5E9" style={styles.actionIcon} />
+              <Text style={styles.actionText}>Profile</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push("/regular_user/about")}
+            activeOpacity={0.7}
           >
-            <Text style={styles.actionText}>About</Text>
+            <View style={styles.actionLeft}>
+              <Ionicons name="information-circle-outline" size={22} color="#0EA5E9" style={styles.actionIcon} />
+              <Text style={styles.actionText}>About</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => router.push("/regular_user/signout/signout_modal")}
+            activeOpacity={0.7}
           >
-            <Text style={styles.actionText}>Logout</Text>
+            <View style={styles.actionLeft}>
+              <Ionicons name="log-out-outline" size={22} color="#EF4444" style={styles.actionIcon} />
+              <Text style={[styles.actionText, { color: "#EF4444" }]}>Logout</Text>
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -102,8 +119,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#5aa0f2",
-    alignItems: "center",
+    backgroundColor: "#F8FAFC",
   },
 
   animatedScreen: {
@@ -112,44 +128,64 @@ const styles = StyleSheet.create({
   },
 
   avatarWrap: {
-    marginTop: 40,
-    marginBottom: 30,
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    backgroundColor: "#bfe0ff",
+    marginTop: 48,
+    marginBottom: 40,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "center",
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   avatar: {
-    width: 92,
-    height: 92,
-    borderRadius: 46,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
   },
 
   buttonStack: {
     width: "100%",
-    alignItems: "center",
-    gap: 22,
+    paddingHorizontal: 24,
+    gap: 16,
   },
 
   actionButton: {
-   width: "48%",
-    height: 90,
-    backgroundColor: "#1e40af",
-    borderRadius: 14,
-    borderWidth: 2,
-    borderColor: "#ffffff",
-    justifyContent: "center",
+    width: "100%",
+    height: 64,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 15,
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  actionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  actionIcon: {
+    marginRight: 12,
   },
 
   actionText: {
-    color: "#ffffff",
-    fontSize: 14,
+    color: "#0F172A",
+    fontSize: 16,
     fontWeight: "600",
   },
 });

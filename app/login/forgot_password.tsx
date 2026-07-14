@@ -290,7 +290,7 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#55A3F0",
+    backgroundColor: "#F8FAFC",
   },
 
   keyboardView: {
@@ -310,60 +310,67 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "#FFFFFF",
-    fontSize: 22,
-    fontWeight: "400",
-    lineHeight: 26,
-    marginBottom: 18,
+    color: "#0F172A",
+    fontSize: 28,
+    fontWeight: "800",
+    lineHeight: 34,
+    marginBottom: 12,
     textAlign: "center",
   },
 
   description: {
-    color: "#000000",
-    fontSize: 14,
+    color: "#64748B",
+    fontSize: 16,
     marginBottom: 32,
     textAlign: "center",
   },
 
   form: {
-    width: "90%",
+    width: "100%",
     maxWidth: 340,
   },
 
   label: {
-    color: "#EAF7FF",
-    fontSize: 13,
-    marginBottom: 6,
-    marginLeft: 8,
-    textAlign: "center",
+    color: "#475569",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+    marginLeft: 4,
+    textAlign: "left",
   },
 
   input: {
-    backgroundColor: "#E9F8FF",
-    height: 42,
-    borderRadius: 22,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    height: 52,
+    borderRadius: 12,
     paddingHorizontal: 16,
-    marginBottom: 14,
-    color: "#000000",
+    marginBottom: 20,
+    color: "#0F172A",
     width: "100%",
+    fontSize: 16,
   },
 
   passwordRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E9F8FF",
-    borderRadius: 22,
-    height: 42,
-    marginBottom: 14,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    height: 52,
+    marginBottom: 20,
     paddingRight: 8,
   },
 
   passwordInput: {
     flex: 1,
-    height: 42,
-    borderRadius: 22,
+    height: 52,
+    borderRadius: 12,
     paddingHorizontal: 16,
-    color: "#000000",
+    color: "#0F172A",
+    fontSize: 16,
   },
 
   eyeButton: {
@@ -375,25 +382,27 @@ const styles = StyleSheet.create({
 
   pinRow: {
     width: "100%",
-    maxWidth: 228,
+    maxWidth: 240,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 90,
+    marginBottom: 40,
   },
 
   pinBox: {
-    width: 34,
-    height: 34,
+    width: 44,
+    height: 48,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#E9FAFF",
-    borderRadius: 9,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
   },
 
   pinDigit: {
-    color: "#102A43",
-    fontSize: 18,
-    fontWeight: "600",
+    color: "#0F172A",
+    fontSize: 20,
+    fontWeight: "700",
   },
 
   hiddenInput: {
@@ -404,11 +413,19 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: "#A8F0C6",
-    width: 240,
-    paddingVertical: 14,
-    borderRadius: 30,
-    marginTop: 24,
+    backgroundColor: "#0EA5E9",
+    width: "100%",
+    maxWidth: 340,
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   buttonDisabled: {
@@ -416,19 +433,20 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "#000000",
-    fontSize: 16,
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "700",
     textAlign: "center",
   },
 
   checkCircle: {
-    width: 134,
-    height: 134,
+    width: 120,
+    height: 120,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#27D77B",
-    borderRadius: 67,
-    marginBottom: 48,
+    backgroundColor: "#10B981",
+    borderRadius: 60,
+    marginBottom: 36,
     overflow: "hidden",
   },
 
@@ -438,16 +456,16 @@ const styles = StyleSheet.create({
     bottom: -28,
     width: 96,
     height: 96,
-    backgroundColor: "rgba(0, 145, 85, 0.26)",
+    backgroundColor: "rgba(0, 145, 85, 0.15)",
     transform: [{ rotate: "45deg" }],
   },
 
   successText: {
-    color: "#FFFFFF",
-    fontSize: 22,
-    fontWeight: "400",
-    lineHeight: 30,
-    marginBottom: 22,
+    color: "#0F172A",
+    fontSize: 20,
+    fontWeight: "600",
+    lineHeight: 28,
+    marginBottom: 16,
     textAlign: "center",
   },
 });

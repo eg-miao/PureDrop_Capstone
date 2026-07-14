@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import {
   AttachmentMachineLearning,
   type AttachmentMachineLearningStatus,
@@ -16,6 +17,7 @@ type CreateReportFormContentProps = {
   category: string;
   gpsLoading: boolean;
   gpsLocation: string;
+  selectedPin?: { latitude: number; longitude: number } | null;
   issue: string;
   location: string;
   submitLoading: boolean;
@@ -26,7 +28,7 @@ type CreateReportFormContentProps = {
   onIssueChange: (value: string) => void;
   onLocationChange: (value: string) => void;
   onPickAttachment: () => void;
-  onAttachmentReviewChange?: (status: AttachmentMachineLearningStatus) => void;
+  onAttachmentReviewChange?: (status: any) => void;
   onRemoveAttachment: (index: number) => void;
   onSubmit: () => void;
   onUseGps: () => void;
@@ -41,6 +43,7 @@ export function CreateReportFormContent({
   category,
   gpsLoading,
   gpsLocation,
+  selectedPin,
   issue,
   location,
   submitLoading,
@@ -64,7 +67,6 @@ export function CreateReportFormContent({
     if (Platform.OS === "web") {
       return {};
     }
-
     return {
       showsVerticalScrollIndicator: true,
       ...(Platform.OS === "android" ? { persistentScrollbar: true } : {}),
@@ -82,35 +84,34 @@ export function CreateReportFormContent({
         keyboardShouldPersistTaps="handled"
         {...mobileScrollProps}
       >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={onBack}
-          activeOpacity={0.85}
-          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-        >
-          <Ionicons name="arrow-back" size={24} color="#ffffff" />
-        </TouchableOpacity>
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={onBack}
+            activeOpacity={0.85}
+            hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+          >
+            <Ionicons name="arrow-back" size={24} color="#0F172A" />
+          </TouchableOpacity>
+          <Text style={styles.pageTitle}>Report a Problem</Text>
+          <View style={{ width: 40 }} />
+        </View>
 
-        <Image
-          source={require("../../assets/images/logo.png")}
-          style={styles.logo}
-        />
-
-        <Text style={styles.label}>Category</Text>
-        <View style={styles.categoryRow}>
+        <Text style={styles.sectionTitle}>Category</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRow}>
           {CATEGORY_OPTIONS.map((option) => {
             const isSelected = category === option;
             return (
               <TouchableOpacity
                 key={option}
-                style={[styles.categoryOption, isSelected && styles.categoryOptionSelected]}
+                style={[styles.categoryPill, isSelected && styles.categoryPillSelected]}
                 onPress={() => onCategoryChange(option)}
                 activeOpacity={0.85}
               >
                 <Text
                   style={[
-                    styles.categoryOptionText,
-                    isSelected && styles.categoryOptionTextSelected,
+                    styles.categoryPillText,
+                    isSelected && styles.categoryPillTextSelected,
                   ]}
                 >
                   {option}
@@ -118,102 +119,142 @@ export function CreateReportFormContent({
               </TouchableOpacity>
             );
           })}
+        </ScrollView>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Issue Details</Text>
+          
+          <Text style={styles.label}>Describe the issue</Text>
+          <TextInput
+            value={issue}
+            onChangeText={onIssueChange}
+            style={styles.textArea}
+            multiline
+            textAlignVertical="top"
+            placeholder="Please provide details about the problem..."
+            placeholderTextColor="#94A3B8"
+          />
+
+          <Text style={styles.label}>Water Meter (Optional)</Text>
+          <TextInput
+            value={waterMeter}
+            onChangeText={onWaterMeterChange}
+            style={styles.input}
+            placeholder="Enter meter reading"
+            placeholderTextColor="#94A3B8"
+            keyboardType="numeric"
+          />
         </View>
 
-        <Text style={styles.label}>Address (Optional)</Text>
-        <TouchableOpacity
-          style={[styles.input, styles.addressPickerTrigger]}
-          activeOpacity={0.85}
-          onPress={() => setAddressModalVisible(true)}
-        >
-          <Text style={address ? styles.addressPickerValue : styles.addressPickerPlaceholder}>
-            {address || "Select barangay in Toledo City"}
-          </Text>
-          <Ionicons name="chevron-down" size={16} color="#0f172a" />
-        </TouchableOpacity>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Location Information</Text>
 
-        <Text style={styles.label}>Location / Landmark (Optional)</Text>
-        <TextInput
-          value={location}
-          onChangeText={onLocationChange}
-          style={styles.input}
-          placeholder="e.g. Atbang sa may Magdugo"
-          placeholderTextColor="#7da8d8"
-        />
-
-        <Text style={styles.label}>GPS [Toledo City Only]</Text>
-        <TextInput
-          value={gpsLocation}
-          editable={false}
-          style={[styles.input, styles.gpsInput]}
-          placeholder="Use GPS / map picker"
-          placeholderTextColor="#7da8d8"
-        />
-
-        <View style={styles.featureRow}>
+          <Text style={styles.label}>Barangay</Text>
           <TouchableOpacity
-            style={[styles.featureButton, gpsLoading && styles.featureButtonLoading]}
-            onPress={onUseGps}
-            disabled={gpsLoading}
+            style={[styles.input, styles.addressPickerTrigger]}
             activeOpacity={0.85}
+            onPress={() => setAddressModalVisible(true)}
           >
-            <Ionicons name="map-outline" size={16} color="#0f172a" />
-            <Text style={styles.featureButtonText}>
-              {gpsLoading ? "Loading map..." : "Pick on Map"}
+            <Text style={address ? styles.addressPickerValue : styles.addressPickerPlaceholder}>
+              {address || "Select barangay in Toledo City"}
             </Text>
+            <Ionicons name="chevron-down" size={16} color="#94A3B8" />
           </TouchableOpacity>
-        </View>
 
-        <Text style={styles.label}>Water Meter (Optional)</Text>
-        <TextInput
-          value={waterMeter}
-          onChangeText={onWaterMeterChange}
-          style={styles.input}
-          placeholder="Meter reading"
-          placeholderTextColor="#7da8d8"
-          keyboardType="numeric"
-        />
+          <Text style={styles.label}>Landmark / Specific Location</Text>
+          <TextInput
+            value={location}
+            onChangeText={onLocationChange}
+            style={styles.input}
+            placeholder="e.g. In front of the chapel"
+            placeholderTextColor="#94A3B8"
+          />
 
-        <Text style={[styles.label, styles.issueLabel]}>Describe an Issue</Text>
-        <TextInput
-          value={issue}
-          onChangeText={onIssueChange}
-          style={styles.textArea}
-          multiline
-          textAlignVertical="top"
-          placeholder=""
-          placeholderTextColor="#7da8d8"
-        />
-
-        <Text style={styles.label}>Upload [2 pictures max]</Text>
-        <TouchableOpacity style={styles.uploadButton} onPress={onPickAttachment}>
-          <Ionicons name="add" size={26} color="#111827" />
-        </TouchableOpacity>
-
-        <View style={styles.attachmentRow}>
-          {attachments.map((item, index) => (
-            <View key={`${item.uri}-${index}`} style={styles.attachmentCard}>
-              <Image source={{ uri: item.uri }} style={styles.attachmentPreview} />
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => onRemoveAttachment(index)}
-              >
-                <Text style={styles.removeButtonText}>X</Text>
+          <View style={styles.gpsHeader}>
+            <Text style={styles.label}>Pin Location on Map</Text>
+            {gpsLocation ? (
+              <TouchableOpacity onPress={onUseGps} activeOpacity={0.7}>
+                <Text style={styles.repickText}>Change Pin</Text>
               </TouchableOpacity>
+            ) : null}
+          </View>
+
+          {selectedPin ? (
+            <View style={styles.miniMapContainer}>
+              <MapView
+                provider={PROVIDER_GOOGLE}
+                style={styles.miniMap}
+                region={{
+                  latitude: selectedPin.latitude,
+                  longitude: selectedPin.longitude,
+                  latitudeDelta: 0.005,
+                  longitudeDelta: 0.005,
+                }}
+                scrollEnabled={false}
+                zoomEnabled={false}
+                pitchEnabled={false}
+                rotateEnabled={false}
+              >
+                <Marker coordinate={selectedPin} />
+              </MapView>
+              <View style={styles.miniMapOverlay}>
+                <Ionicons name="location" size={14} color="#0EA5E9" />
+                <Text style={styles.miniMapAddressText} numberOfLines={1}>
+                  {gpsLocation}
+                </Text>
+              </View>
             </View>
-          ))}
+          ) : (
+            <TouchableOpacity
+              style={[styles.featureButton, gpsLoading && styles.featureButtonLoading]}
+              onPress={onUseGps}
+              disabled={gpsLoading}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="map-outline" size={20} color="#0EA5E9" />
+              <Text style={styles.featureButtonText}>
+                {gpsLoading ? "Loading map..." : "Open Map to Pin Location"}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        <Text style={styles.attachmentsText}>Attachments: {attachments.length}/2</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Attachments</Text>
+          <Text style={styles.attachmentsText}>Upload up to 2 photos to help us identify the issue.</Text>
 
-        <AttachmentMachineLearning
-          attachments={attachments}
-          category={category}
-          onStatusChange={onAttachmentReviewChange}
-        />
+          <View style={styles.attachmentRow}>
+            {attachments.map((item, index) => (
+              <View key={`${item.uri}-${index}`} style={styles.attachmentCard}>
+                <Image source={{ uri: item.uri }} style={styles.attachmentPreview} />
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => onRemoveAttachment(index)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="close" size={14} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+            ))}
 
-        <TouchableOpacity style={styles.submitButton} onPress={onSubmit} disabled={submitLoading}>
-          <Text style={styles.submitText}>{submitLoading ? "Uploading..." : "Submit"}</Text>
+            {attachments.length < 2 && (
+              <TouchableOpacity style={styles.uploadButton} onPress={onPickAttachment} activeOpacity={0.7}>
+                <Ionicons name="image-outline" size={32} color="#94A3B8" />
+                <Text style={styles.uploadButtonText}>Add Photo</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <AttachmentMachineLearning
+            attachments={attachments}
+            category={category}
+            onStatusChange={onAttachmentReviewChange}
+          />
+        </View>
+
+        <TouchableOpacity style={styles.submitButton} onPress={onSubmit} disabled={submitLoading} activeOpacity={0.85}>
+          <Text style={styles.submitText}>{submitLoading ? "Submitting..." : "Submit Report"}</Text>
+          {!submitLoading && <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />}
         </TouchableOpacity>
       </ScrollView>
 

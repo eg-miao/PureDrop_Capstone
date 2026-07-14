@@ -14,14 +14,13 @@ export type Region = Coordinate & {
 type MapPickerProps = {
   style?: StyleProp<ViewStyle>;
   initialRegion: Region;
-  selectedPin: Coordinate | null;
-  onPress: (coordinate: Coordinate) => void;
+  onRegionChangeComplete: (region: Region) => void;
 };
 
 export function MapPicker({ style }: MapPickerProps) {
   return (
     <View style={[style, styles.fallback]}>
-      <Text style={styles.title}>Map picker is unavailable on web.</Text>
+      <Text style={styles.title}>Map picker is unavailable on this platform.</Text>
       <Text style={styles.text}>Use the GPS button to auto-fill your current location.</Text>
     </View>
   );

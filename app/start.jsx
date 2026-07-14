@@ -1,57 +1,105 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function StartScreen() {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("../assets/images/logo.png")}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Image
+          source={require("../assets/images/logo.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.title}>Let's get started</Text>
+        <Text style={styles.subtitle}>Login or create a new account to continue</Text>
+      </View>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push("/login")}
-      >
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[styles.button, styles.loginButton]}
+          onPress={() => router.push("/login")}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.buttonText, styles.loginButtonText]}>Login</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push("/login/register")}
-      >
-        <Text style={styles.buttonText}>Register</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          style={[styles.button, styles.registerButton]}
+          onPress={() => router.push("/login/register")}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.buttonText, styles.registerButtonText]}>Register</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#4DA3FF",
+    backgroundColor: "#F8FAFC",
+  },
+  content: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 24,
   },
   logo: {
-    width: 260,
-    height: 260,
-    marginBottom: 80,
+    width: 240,
+    height: 240,
+    marginBottom: 40,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#0F172A",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#64748B",
+    textAlign: "center",
+    marginBottom: 40,
+  },
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+    gap: 16,
   },
   button: {
-    backgroundColor: "#A8F0C6",
-    paddingVertical: 14,
-    width: 240,
-    borderRadius: 30,
-    marginBottom: 20,
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+  },
+  loginButton: {
+    backgroundColor: "#0EA5E9",
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  registerButton: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
   },
   buttonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#000",
-    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  loginButtonText: {
+    color: "#FFFFFF",
+  },
+  registerButtonText: {
+    color: "#0F172A",
   },
 });

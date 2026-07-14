@@ -91,15 +91,16 @@ const styles = StyleSheet.create({
   iconButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.15)",
+    backgroundColor: "rgba(255,255,255,0.2)",
   },
   headerText: {
     flex: 1,
-    color: "#ffffff",
-    fontSize: 14,
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
   },
   imageWrap: {
     flex: 1,

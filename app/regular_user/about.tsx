@@ -1,12 +1,29 @@
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AboutScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>About</Text>
+      <View style={[styles.header, { paddingTop: Math.max(12, insets.top + 4) }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+        >
+          <Ionicons name="arrow-back" size={24} color="#0F172A" />
+        </TouchableOpacity>
 
+        <Text style={styles.headerTitle}>About</Text>
+
+        <View style={styles.headerSpacer} />
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.card}>
           <Text style={styles.body}>
             PureDrop is a community-based reporting platform created to help residents
@@ -50,37 +67,69 @@ export default function AboutScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#5aa0f2",
+    backgroundColor: "#F8FAFC",
+  },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+  },
+
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+
+  headerSpacer: {
+    width: 40,
+    height: 40,
+  },
+
+  headerTitle: {
+    color: "#0F172A",
+    fontSize: 20,
+    fontWeight: "800",
   },
 
   scrollContent: {
     alignItems: "center",
-    paddingHorizontal: 18,
-    paddingTop: 24,
-    paddingBottom: 30,
-  },
-
-  title: {
-    fontSize: 24,
-    color: "#ffffff",
-    fontWeight: "600",
-    marginBottom: 16,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 40,
   },
 
   card: {
     width: "100%",
-    backgroundColor: "#e5e7eb",
+    backgroundColor: "#FFFFFF",
     borderRadius: 16,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: "#cbd5f5",
+    padding: 24,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
 
   body: {
-    color: "#1f2937",
-    fontSize: 12,
-    lineHeight: 18,
-    textAlign: "center",
-    marginBottom: 10,
+    color: "#334155",
+    fontSize: 14,
+    lineHeight: 22,
+    textAlign: "left",
+    marginBottom: 16,
   },
 });

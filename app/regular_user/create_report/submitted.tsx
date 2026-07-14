@@ -12,7 +12,7 @@ export default function SubmittedReportScreen() {
         <Image source={require("../../../assets/images/logo.png")} style={styles.logo} />
 
         <View style={styles.iconWrap}>
-          <Ionicons name="checkmark" size={88} color="#ffffff" />
+          <Ionicons name="checkmark" size={64} color="#ffffff" />
         </View>
 
         <Text style={styles.message}>
@@ -34,51 +34,60 @@ export default function SubmittedReportScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#5a9ae6",
+    backgroundColor: "#F8FAFC",
   },
   content: {
     flex: 1,
-    paddingHorizontal: 28,
+    paddingHorizontal: 24,
     alignItems: "center",
-    justifyContent: "flex-start",
-    paddingTop: 30,
+    justifyContent: "center",
+    paddingBottom: 80,
   },
   logo: {
-    width: 140,
-    height: 140,
+    width: 110,
+    height: 110,
     resizeMode: "contain",
     marginBottom: 24,
   },
   iconWrap: {
-    width: 145,
-    height: 145,
-    borderRadius: 73,
-    backgroundColor: "#26d07c",
+    width: 120,
+    height: 120,
+    borderRadius: 32,
+    backgroundColor: "#10B981",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 26,
+    shadowColor: "#10B981",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   message: {
-    color: "#ffffff",
-    fontSize: 20,
+    color: "#0F172A",
+    fontSize: 18,
+    fontWeight: "700",
     textAlign: "center",
-    lineHeight: 30,
+    lineHeight: 26,
     marginBottom: 36,
     paddingHorizontal: 8,
   },
   button: {
-    width: "92%",
-    height: 48,
-    borderRadius: 10,
-    backgroundColor: "#89e2bb",
-    borderWidth: 2,
-    borderColor: "#d7f7e8",
+    width: 240,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: "#0EA5E9",
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   buttonText: {
-    color: "#0b1f1a",
-    fontSize: 30,
-    fontWeight: "400",
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
   },
 });

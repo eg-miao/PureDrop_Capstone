@@ -207,15 +207,9 @@ export function AttachmentMachineLearning({
     });
 
     void (async () => {
-      const items: AttachmentMachineLearningItem[] = [];
-
-      for (const attachment of attachments) {
-        if (cancelled) {
-          return;
-        }
-
-        items.push(await buildItemReview(attachment, category));
-      }
+      const items = await Promise.all(
+        attachments.map((attachment) => buildItemReview(attachment, category))
+      );
 
       if (cancelled) {
         return;

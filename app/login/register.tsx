@@ -211,6 +211,9 @@ export default function RegisterScreen() {
           resizeMode="contain"
         />
 
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>Sign up to get started</Text>
+
         <View style={styles.form}>
           <Text style={styles.label}>Full Name (eg. Juan Dela Cruz)</Text>
           <TextInput
@@ -260,7 +263,7 @@ export default function RegisterScreen() {
               <Ionicons
                 name={showPassword ? "eye-off-outline" : "eye-outline"}
                 size={22}
-                color="#1E4F7A"
+                color="#475569"
               />
             </TouchableOpacity>
           </View>
@@ -286,7 +289,7 @@ export default function RegisterScreen() {
               <Ionicons
                 name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
                 size={22}
-                color="#1E4F7A"
+                color="#475569"
               />
             </TouchableOpacity>
           </View>
@@ -328,25 +331,38 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#4DA3FF",
+    backgroundColor: "#F8FAFC",
   },
 
   scrollContent: {
     flexGrow: 1,
     alignItems: "center",
-    paddingTop: 24,
-    paddingBottom: 220,
+    paddingTop: 48,
+    paddingBottom: 140,
+    paddingHorizontal: 24,
   },
 
   logo: {
-    width: 128,
-    height: 128,
-    marginBottom: 0,
-    transform: [{ translateY: -10 }],
+    width: 100,
+    height: 100,
+    marginBottom: 24,
+  },
+
+  title: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#0F172A",
+    marginBottom: 8,
+  },
+
+  subtitle: {
+    fontSize: 16,
+    color: "#64748B",
+    marginBottom: 32,
   },
 
   form: {
-    width: "80%",
+    width: "100%",
   },
 
   fieldGroup: {
@@ -354,41 +370,47 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    color: "#EAF7FF",
-    fontSize: 13,
-    marginBottom: 4,
-    marginLeft: 8,
-    textAlign: "center",
+    color: "#475569",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+    marginLeft: 4,
+    textAlign: "left",
   },
 
   input: {
-    backgroundColor: "#E9F8FF",
-    height: 38,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    height: 52,
     width: "100%",
-    alignSelf: "center",
-    borderRadius: 22,
+    borderRadius: 12,
     paddingHorizontal: 16,
-    marginBottom: 10,
+    marginBottom: 20,
     justifyContent: "center",
-    color: "#000000",
+    color: "#0F172A",
+    fontSize: 16,
   },
 
   passwordWrap: {
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E9F8FF",
-    height: 38,
-    borderRadius: 22,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    height: 52,
+    borderRadius: 12,
     paddingLeft: 16,
     paddingRight: 10,
-    marginBottom: 10,
+    marginBottom: 20,
   },
 
   passwordInput: {
     flex: 1,
     height: "100%",
-    color: "#000000",
+    color: "#0F172A",
+    fontSize: 16,
   },
 
   eyeButton: {
@@ -400,31 +422,40 @@ const styles = StyleSheet.create({
   },
 
   inputText: {
-    color: "#000",
+    color: "#0F172A",
+    fontSize: 16,
   },
 
   placeholderText: {
-    color: "#6D7D8A",
+    color: "#94A3B8",
+    fontSize: 16,
   },
 
   button: {
-    backgroundColor: "#A8F0C6",
-    width: 240,
-    paddingVertical: 14,
-    borderRadius: 30,
-    marginTop: 28,
+    backgroundColor: "#0EA5E9",
+    width: "100%",
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   buttonText: {
     textAlign: "center",
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#000",
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
 
   footer: {
-    marginTop: 18,
+    marginTop: 32,
     fontSize: 14,
-    color: "#1E4F7A",
+    color: "#94A3B8",
   },
 });
