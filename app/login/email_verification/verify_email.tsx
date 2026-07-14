@@ -145,27 +145,27 @@ export default function VerifyEmailScreen() {
 
         <View style={styles.actions}>
           <TouchableOpacity
-            style={[styles.button, secondsLeft > 0 && styles.buttonDisabled]}
+            style={[styles.button, styles.resendButton, secondsLeft > 0 && styles.buttonDisabled]}
             onPress={handleResend}
             activeOpacity={0.8}
             disabled={secondsLeft > 0 || isResending}
           >
-            <Text style={styles.buttonText}>
+            <Text style={[styles.buttonText, styles.resendButtonText]}>
               {isResending
                 ? "Sending..."
                 : secondsLeft > 0
-                  ? `Resend Email\n(${secondsLeft}s)`
+                  ? `Resend Email (${secondsLeft}s)`
                   : "Resend Email"}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, isVerifying && styles.buttonDisabled]}
+            style={[styles.button, styles.verifyButton, isVerifying && styles.buttonDisabled]}
             onPress={handleVerify}
             activeOpacity={0.8}
             disabled={isVerifying}
           >
-            <Text style={styles.buttonText}>{isVerifying ? "Verifying..." : "Verify"}</Text>
+            <Text style={[styles.buttonText, styles.verifyButtonText]}>{isVerifying ? "Verifying..." : "Verify"}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -176,7 +176,7 @@ export default function VerifyEmailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#55A3F0",
+    backgroundColor: "#f0f9ff",
   },
 
   content: {
@@ -193,43 +193,46 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "#FFFFFF",
+    color: "#0f172a",
     fontSize: 24,
-    fontWeight: "400",
+    fontWeight: "700",
     textAlign: "center",
-    marginBottom: 18,
+    marginBottom: 14,
   },
 
   subtitle: {
-    color: "#000000",
+    color: "#475569",
     fontSize: 14,
     textAlign: "center",
+    lineHeight: 20,
   },
 
   pinRow: {
     width: "100%",
-    maxWidth: 288,
+    maxWidth: 260,
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 70,
   },
 
   pinBox: {
-    width: 34,
-    height: 34,
+    width: 38,
+    height: 38,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#E9FAFF",
-    borderRadius: 9,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 6,
   },
 
   pinBoxFilled: {
     borderWidth: 2,
-    borderColor: "#A8F0C6",
+    borderColor: "#0284c7",
   },
 
   pinDigit: {
-    color: "#102A43",
+    color: "#0f172a",
     fontSize: 18,
     fontWeight: "600",
   },
@@ -244,30 +247,44 @@ const styles = StyleSheet.create({
   actions: {
     width: "100%",
     alignItems: "center",
-    gap: 30,
+    gap: 16,
   },
 
   button: {
-    width: 208,
-    minHeight: 40,
+    width: 240,
+    minHeight: 44,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#A8F0C6",
-    borderWidth: 2,
-    borderColor: "#E9FAFF",
-    borderRadius: 10,
+    borderRadius: 6,
     paddingHorizontal: 18,
-    paddingVertical: 8,
+    paddingVertical: 10,
+  },
+
+  resendButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1.5,
+    borderColor: "#0284c7",
+  },
+
+  verifyButton: {
+    backgroundColor: "#0284c7",
   },
 
   buttonDisabled: {
-    opacity: 0.95,
+    opacity: 0.5,
   },
 
   buttonText: {
-    color: "#000000",
-    fontSize: 16,
-    lineHeight: 18,
+    fontSize: 15,
+    fontWeight: "600",
     textAlign: "center",
+  },
+
+  resendButtonText: {
+    color: "#0284c7",
+  },
+
+  verifyButtonText: {
+    color: "#ffffff",
   },
 });

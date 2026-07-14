@@ -1,54 +1,71 @@
-import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator, Modal, Text, TouchableOpacity, View } from "react-native";
-import { MapPicker, type Coordinate, type Region } from "./MapPicker";
+import { Ionicons } from "@expo/vector-icons";
+import { MapPicker, type Region } from "./MapPicker";
 import { styles } from "./createReportStyles";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type GpsMapModalProps = {
   gpsLoading: boolean;
   initialRegion: Region;
-  selectedPin: Coordinate | null;
   visible: boolean;
   onCancel: () => void;
   onConfirm: () => void;
-  onMapPress: (coordinate: Coordinate) => void;
+  onRegionChangeComplete: (region: Region) => void;
 };
 
 export function GpsMapModal({
   gpsLoading,
   initialRegion,
-  selectedPin,
   visible,
   onCancel,
   onConfirm,
-  onMapPress,
+  onRegionChangeComplete,
 }: GpsMapModalProps) {
-  return (
-    <Modal visible={visible} animationType="slide">
-      <SafeAreaView style={styles.mapContainer}>
-        <View style={styles.mapHeader}>
-          <Text style={styles.mapTitle}>Tap to select location</Text>
-        </View>
+  const insets = useSafeAreaInsets();
 
+  return (
+    <Modal visible={visible} animationType="slide" transparent>
+      <View style={styles.fullScreenMapContainer}>
         <MapPicker
-          style={styles.map}
+          style={styles.fullScreenMap}
           initialRegion={initialRegion}
-          selectedPin={selectedPin}
-          onPress={onMapPress}
+          onRegionChangeComplete={onRegionChangeComplete}
         />
 
-        <View style={styles.mapActions}>
-          <TouchableOpacity style={styles.mapCancelButton} onPress={onCancel}>
-            <Text style={styles.mapCancelText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.mapConfirmButton} onPress={onConfirm}>
-            {gpsLoading ? (
-              <ActivityIndicator size="small" color="#0b1f1a" />
-            ) : (
-              <Text style={styles.mapConfirmText}>Use this location</Text>
-            )}
+        {/* Fixed Center Pin */}
+        <View style={styles.centerPinContainer} pointerEvents="none">
+          <View style={styles.centerPinIconWrap}>
+            <Ionicons name="location" size={40} color="#EF4444" />
+          </View>
+          <View style={styles.centerPinShadow} />
+        </View>
+
+        {/* Floating Top Bar */}
+        <View style={[styles.floatingTopBar, { top: Math.max(20, insets.top + 10) }]}>
+          <TouchableOpacity style={styles.floatingCloseButton} onPress={onCancel} activeOpacity={0.8}>
+            <Ionicons name="close" size={24} color="#0F172A" />
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+
+        {/* Floating Bottom Bar */}
+        <View style={[styles.floatingBottomBar, { paddingBottom: Math.max(24, insets.bottom + 12) }]}>
+          <View style={styles.floatingConfirmPanel}>
+            <Text style={styles.floatingInstructionText}>
+              Drag the map to perfectly align the pin with your issue's location.
+            </Text>
+            <TouchableOpacity style={styles.floatingConfirmButton} onPress={onConfirm} activeOpacity={0.85}>
+              {gpsLoading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <Ionicons name="checkmark-circle" size={22} color="#FFFFFF" />
+                  <Text style={styles.floatingConfirmText}>Confirm Location</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
     </Modal>
   );
 }

@@ -99,12 +99,15 @@ export default function RegularUserLayout() {
           name="home"
           options={{
             href: "/regular_user/home",
-            tabBarIcon: () => (
-              <Ionicons
-                name="home-outline"
-                size={26}
-                color="#1e88e5"
-              />
+            tabBarIcon: ({ focused }) => (
+              <View style={styles.iconContainer}>
+                <Ionicons
+                  name={focused ? "home" : "home-outline"}
+                  size={24}
+                  color={focused ? "#0EA5E9" : "#94A3B8"}
+                />
+                {focused && <View style={styles.activeIndicator} />}
+              </View>
             ),
           }}
         />
@@ -114,13 +117,14 @@ export default function RegularUserLayout() {
         options={{
           href: "/regular_user/notifications",
           tabBarIcon: ({ focused }) => (
-            <View style={styles.notifIconWrap}>
+            <View style={styles.iconContainer}>
               <Ionicons
-                name="notifications-outline"
-                size={26}
-                color="#1e88e5"
+                name={focused ? "notifications" : "notifications-outline"}
+                size={24}
+                color={focused ? "#0EA5E9" : "#94A3B8"}
               />
               {unreadCount > 0 && !focused ? <View style={styles.notifDot} /> : null}
+              {focused && <View style={styles.activeIndicator} />}
             </View>
           ),
         }}
@@ -138,11 +142,14 @@ export default function RegularUserLayout() {
         name="profile"
         options={{
           href: "/regular_user/profile",
-          tabBarIcon: () => (
-            <Image
-              source={tabAvatarSource}
-              style={styles.avatar}
-            />
+          tabBarIcon: ({ focused }) => (
+            <View style={styles.iconContainer}>
+              <Image
+                source={tabAvatarSource}
+                style={[styles.avatar, focused && styles.activeAvatar]}
+              />
+              {focused && <View style={styles.activeIndicator} />}
+            </View>
           ),
         }}
       />
@@ -184,16 +191,20 @@ export default function RegularUserLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    height: 65,
-    backgroundColor: "#e0f2fe",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-
-    // 🔥 IMPORTANT FIXES
+    height: 70,
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 0,
     position: "absolute",
-    paddingBottom: 8,
-    paddingTop: 8,
-    paddingHorizontal: 10,
+    paddingBottom: 12,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 10,
   },
 
   tabItem: {
@@ -201,31 +212,47 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-  },
-  notifIconWrap: {
-    width: 30,
-    height: 30,
+  iconContainer: {
     alignItems: "center",
     justifyContent: "center",
   },
+
+  activeIndicator: {
+    marginTop: 6,
+    width: 16,
+    height: 4,
+    backgroundColor: "#0EA5E9",
+    borderRadius: 2,
+  },
+
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: "transparent",
+  },
+
+  activeAvatar: {
+    borderColor: "#0EA5E9",
+  },
+
   notifDot: {
     position: "absolute",
-    top: 3,
-    right: 1,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#ef4444",
+    top: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#EF4444",
+    borderWidth: 1.5,
+    borderColor: "#FFFFFF",
   },
 
   loading: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#e0f2fe",
+    backgroundColor: "#F8FAFC",
   },
 });

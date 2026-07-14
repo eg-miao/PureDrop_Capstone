@@ -13,7 +13,7 @@ export type Attachment = {
   uri: string;
   mimeType?: string | null;
   fileName?: string | null;
-  base64Data?: string;
+  base64?: string | null;
 };
 
 const TOLEDO_BARANGAYS = [
@@ -184,7 +184,7 @@ export function useCreateReportForm() {
       uri: stableUri,
       mimeType: picked.mimeType,
       fileName: picked.fileName,
-      base64Data: picked.base64 || undefined,
+      base64: picked.base64,
     };
   };
 
@@ -212,6 +212,11 @@ export function useCreateReportForm() {
   };
 
   const handleUseGps = async () => {
+    if (selectedPin) {
+      setMapVisible(true);
+      return;
+    }
+
     try {
       setGpsLoading(true);
       const gpsResult = await getCurrentGpsLocation();
@@ -248,8 +253,12 @@ export function useCreateReportForm() {
     }
   };
 
-  const handleMapPress = (coordinate: Coordinate) => {
-    setSelectedPin(coordinate);
+  const handleRegionChangeComplete = (region: Region) => {
+    setMapRegion(region);
+    setSelectedPin({
+      latitude: region.latitude,
+      longitude: region.longitude,
+    });
   };
 
   const handleConfirmMapLocation = async () => {
@@ -278,30 +287,39 @@ export function useCreateReportForm() {
     }
   };
 
-  const handlePickAttachment = async () => {
-    if (attachments.length >= 2) {
-      Alert.alert("Attachment limit", "Only 2 attachments are allowed.");
-      return;
+  const launchPicker = async (source: "camera" | "gallery") => {
+    let result;
+    if (source === "camera") {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (permission.status !== "granted") {
+        Alert.alert("Permission needed", "Please allow camera access to take photos.");
+        return;
+      }
+      result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        allowsEditing: false,
+        base64: true,
+      });
+    } else {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permission.status !== "granted") {
+        Alert.alert("Permission needed", "Please allow photo library access.");
+        return;
+      }
+      result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        allowsMultipleSelection: false,
+        base64: true,
+      });
     }
 
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (permission.status !== "granted") {
-      Alert.alert("Permission needed", "Please allow photo library access.");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      quality: 0.8,
-      allowsMultipleSelection: false,
-      base64: true,
-    });
 
     if (!result.canceled && result.assets.length > 0) {
       try {
         const picked = result.assets[0];
         const stableAttachment = await createStableAttachment(picked);
-
         setAttachments((prev) => [...prev, stableAttachment]);
       } catch {
         Alert.alert(
@@ -310,6 +328,19 @@ export function useCreateReportForm() {
         );
       }
     }
+  };
+
+  const handlePickAttachment = () => {
+    if (attachments.length >= 2) {
+      Alert.alert("Attachment limit", "Only 2 attachments are allowed.");
+      return;
+    }
+
+    Alert.alert("Add Photo", "Choose an option", [
+      { text: "Take Photo", onPress: () => void launchPicker("camera") },
+      { text: "Choose from Gallery", onPress: () => void launchPicker("gallery") },
+      { text: "Cancel", style: "cancel" },
+    ]);
   };
 
   const handleRemoveAttachment = (index: number) => {
@@ -403,7 +434,7 @@ export function useCreateReportForm() {
 
         const uploaded = await uploadFile(attachment.uri, destinationPath, {
           contentType: attachment.mimeType || getContentType(extension),
-          base64Data: attachment.base64Data,
+          base64Data: attachment.base64 ?? undefined,
         });
 
         const uploadedPath =
@@ -486,7 +517,7 @@ export function useCreateReportForm() {
     gpsLoading,
     gpsLocation,
     handleConfirmMapLocation,
-    handleMapPress,
+    handleRegionChangeComplete,
     handlePickAttachment,
     handleRemoveAttachment,
     handleAutoCategorizeIssue,

@@ -127,6 +127,14 @@ const buildLegacyInvokeBody = async (
   const fileName = getAttachmentFileName(attachment);
   const mimeType = getAttachmentMimeType(attachment);
 
+  if (attachment.base64) {
+    return {
+      base64: attachment.base64,
+      fileName,
+      mimeType,
+    };
+  }
+
   if (Platform.OS === "web") {
     const response = await fetch(attachment.uri);
     if (!response.ok) {

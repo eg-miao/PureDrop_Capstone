@@ -14,8 +14,7 @@ export type Region = Coordinate & {
 type MapPickerProps = {
   style?: StyleProp<ViewStyle>;
   initialRegion: Region;
-  selectedPin: Coordinate | null;
-  onPress: (coordinate: Coordinate) => void;
+  onRegionChangeComplete: (region: Region) => void;
 };
 
 export function MapPicker({ style }: MapPickerProps) {

@@ -1,4 +1,5 @@
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import {
   ActivityIndicator,
   Image,
@@ -38,9 +39,9 @@ export default function ProfileComponent({
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* <TouchableOpacity style={styles.backButton} onPress={onBack}>
-        <Ionicons name="arrow-back" size={26} color="#ffffff" />
-      </TouchableOpacity> */}
+      <TouchableOpacity style={styles.backButton} onPress={onBack}>
+        <Ionicons name="arrow-back" size={24} color="#ffffff" />
+      </TouchableOpacity>
 
       <View style={styles.card}>
         <Text style={styles.title}>Profile</Text>
@@ -92,7 +93,7 @@ export default function ProfileComponent({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#5aa0f2",
+    backgroundColor: "#f0f9ff",
     alignItems: "center",
   },
   backButton: {
@@ -102,38 +103,43 @@ const styles = StyleSheet.create({
     zIndex: 10,
     width: 36,
     height: 36,
-    borderRadius: 18,
-    backgroundColor: "#1e88e5",
+    borderRadius: 6,
+    backgroundColor: "#0284c7",
     justifyContent: "center",
     alignItems: "center",
   },
   card: {
-    marginTop: 80,
+    marginTop: 110,
     width: "90%",
     maxWidth: 360,
-    minHeight: 560,
-    backgroundColor: "#d1d1d1",
-    borderRadius: 10,
+    minHeight: 460,
+    backgroundColor: "#ffffff",
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: "#3aa0ff",
+    borderColor: "#e2e8f0",
     alignItems: "center",
-    paddingHorizontal: 18,
-    paddingTop: 22,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   title: {
-    fontSize: 38,
-    fontWeight: "400",
-    color: "#1d1d1d",
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#0f172a",
     marginBottom: 20,
   },
   avatarWrap: {
-    width: 132,
-    height: 132,
-    borderRadius: 66,
-    borderWidth: 4,
-    borderColor: "#d8f0ff",
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 2,
+    borderColor: "#e2e8f0",
     overflow: "hidden",
-    backgroundColor: "#4a5260",
+    backgroundColor: "#f1f5f9",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
@@ -146,50 +152,51 @@ const styles = StyleSheet.create({
     marginTop: 28,
   },
   nameText: {
-    fontSize: 32,
-    fontWeight: "400",
-    color: "#1a1a1a",
-    marginBottom: 24,
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#0f172a",
+    marginBottom: 16,
     textAlign: "center",
   },
   errorText: {
     fontSize: 14,
-    color: "#a11b1b",
+    color: "#ef4444",
     marginBottom: 10,
     textAlign: "center",
   },
   changePhotoButton: {
-    backgroundColor: "#1e88e5",
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    marginBottom: 16,
+    backgroundColor: "#0284c7",
+    borderRadius: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginBottom: 24,
   },
   changePhotoButtonDisabled: {
     opacity: 0.7,
   },
   changePhotoText: {
     color: "#ffffff",
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
   },
   fieldGroup: {
     width: "100%",
-    marginBottom: 22,
+    marginBottom: 20,
   },
   fieldLabel: {
-    fontSize: 13,
-    color: "#a2a2a2",
-    marginBottom: 6,
-    letterSpacing: 0.2,
+    fontSize: 12,
+    color: "#475569",
+    fontWeight: "600",
+    marginBottom: 4,
+    letterSpacing: 0.5,
   },
   fieldValue: {
-    fontSize: 16,
-    color: "#1f1f1f",
+    fontSize: 15,
+    color: "#0f172a",
     marginBottom: 6,
   },
   line: {
-    borderBottomColor: "#7f7f7f",
+    borderBottomColor: "#e2e8f0",
     borderBottomWidth: 1,
     width: "100%",
   },

@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useNavigation, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { AttachmentMachineLearningStatus } from "../../../components/create_report/AttachmentMachineLearning";
@@ -11,9 +11,56 @@ import { useCreateReportForm } from "../../../components/create_report/useCreate
 export default function CreateReportScreen() {
   const form = useCreateReportForm();
   const router = useRouter();
+  const navigation = useNavigation();
   const [attachmentReview, setAttachmentReview] = useState<AttachmentMachineLearningStatus | null>(
     null,
   );
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isFormDirty =
+    form.category !== "" ||
+    form.issue !== "" ||
+    form.address !== "" ||
+    form.location !== "" ||
+    form.gpsLocation !== "" ||
+    form.attachments.length > 0 ||
+    form.waterMeter !== "";
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      // If we're submitting, or the form is clean, let the navigation happen
+      if (!isFormDirty || isSubmitting) {
+        return;
+      }
+
+      // Prevent default behavior of leaving the screen
+      e.preventDefault();
+
+      Alert.alert(
+        "Discard Report?",
+        "You have unfinished details in your report. Are you sure you want to discard them?",
+        [
+          { text: "Keep Editing", style: "cancel", onPress: () => {} },
+          {
+            text: "Discard",
+            style: "destructive",
+            onPress: () => navigation.dispatch(e.data.action),
+          },
+        ]
+      );
+    });
+
+    return unsubscribe;
+  }, [navigation, isFormDirty, isSubmitting]);
+
+  const handleBackPress = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/regular_user/home");
+    }
+  };
 
   const handleSubmitPress = async () => {
     if (attachmentReview && !attachmentReview.canSubmit) {
@@ -21,9 +68,12 @@ export default function CreateReportScreen() {
       return;
     }
 
+    setIsSubmitting(true);
     const didSubmit = await form.handleSubmit();
     if (didSubmit) {
       router.replace("/regular_user/create_report/submitted");
+    } else {
+      setIsSubmitting(false);
     }
   };
 
@@ -35,6 +85,7 @@ export default function CreateReportScreen() {
         category={form.category}
         gpsLoading={form.gpsLoading}
         gpsLocation={form.gpsLocation}
+        selectedPin={form.selectedPin}
         issue={form.issue}
         location={form.location}
         submitLoading={form.submitLoading}
@@ -46,7 +97,7 @@ export default function CreateReportScreen() {
         onAttachmentReviewChange={setAttachmentReview}
         onPickAttachment={form.handlePickAttachment}
         onRemoveAttachment={form.handleRemoveAttachment}
-        onBack={() => router.replace("/regular_user/home")}
+        onBack={handleBackPress}
         onSubmit={handleSubmitPress}
         onUseGps={form.handleUseGps}
         onWaterMeterChange={form.setWaterMeter}
@@ -59,7 +110,7 @@ export default function CreateReportScreen() {
         visible={form.mapVisible}
         onCancel={() => form.setMapVisible(false)}
         onConfirm={form.handleConfirmMapLocation}
-        onMapPress={form.handleMapPress}
+        onRegionChangeComplete={form.handleRegionChangeComplete}
       />
     </SafeAreaView>
   );

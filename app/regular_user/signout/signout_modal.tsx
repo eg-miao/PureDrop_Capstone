@@ -26,12 +26,12 @@ export default function SignOutModal() {
         <Text style={styles.title}>Do you want to logout?</Text>
 
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.button} onPress={handleConfirm}>
+          <TouchableOpacity style={[styles.button, styles.yesButton]} onPress={handleConfirm}>
             <Text style={styles.buttonText}>YES</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={() => router.back()}>
-            <Text style={styles.buttonText}>NO</Text>
+          <TouchableOpacity style={[styles.button, styles.noButton]} onPress={() => router.back()}>
+            <Text style={[styles.buttonText, styles.noButtonText]}>NO</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -42,7 +42,7 @@ export default function SignOutModal() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#5aa0f2",
+    backgroundColor: "rgba(15, 23, 42, 0.45)",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
@@ -50,44 +50,61 @@ const styles = StyleSheet.create({
 
   modalCard: {
     width: "100%",
-    maxWidth: 360,
-    backgroundColor: "#e5e7eb",
-    borderRadius: 16,
-    paddingVertical: 24,
-    paddingHorizontal: 18,
-    borderWidth: 2,
-    borderColor: "#ffffff",
+    maxWidth: 320,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
     alignItems: "center",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
   },
 
   title: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0F172A",
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 24,
   },
 
   actions: {
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-around",
+    gap: 16,
   },
 
   button: {
-    width: 96,
+    flex: 1,
     height: 48,
-    backgroundColor: "#1f44db",
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: "#d7ecff",
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
   },
 
+  yesButton: {
+    backgroundColor: "#EF4444",
+  },
+
+  noButton: {
+    backgroundColor: "#F1F5F9",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+  },
+
   buttonText: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontWeight: "700",
-    fontSize: 14,
+    fontSize: 15,
+  },
+
+  noButtonText: {
+    color: "#475569",
   },
 });
