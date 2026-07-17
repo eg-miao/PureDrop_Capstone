@@ -1,5 +1,5 @@
 import { useNavigation, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { AttachmentMachineLearningStatus } from "../../../components/create_report/AttachmentMachineLearning";
@@ -12,6 +12,7 @@ export default function CreateReportScreen() {
   const form = useCreateReportForm();
   const router = useRouter();
   const navigation = useNavigation();
+  const isDiscardingRef = useRef(false);
   const [attachmentReview, setAttachmentReview] = useState<AttachmentMachineLearningStatus | null>(
     null,
   );
@@ -30,7 +31,7 @@ export default function CreateReportScreen() {
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
       // If we're submitting, or the form is clean, let the navigation happen
-      if (!isFormDirty || isSubmitting) {
+      if (!isFormDirty || isSubmitting || isDiscardingRef.current) {
         return;
       }
 
@@ -45,7 +46,10 @@ export default function CreateReportScreen() {
           {
             text: "Discard",
             style: "destructive",
-            onPress: () => navigation.dispatch(e.data.action),
+            onPress: () => {
+              isDiscardingRef.current = true;
+              navigation.dispatch(e.data.action);
+            },
           },
         ]
       );

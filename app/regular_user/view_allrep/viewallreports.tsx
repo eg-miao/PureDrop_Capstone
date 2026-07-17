@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   },
   cornerAvatar: {
     position: "absolute",
-    top: 24,
+    top: 55,
     right: 24,
     width: 48,
     height: 48,

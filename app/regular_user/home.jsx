@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
   Image,
@@ -170,13 +169,7 @@ export default function MainPage() {
       </ScrollView>
 
       {/* Floating Help FAB */}
-      <TouchableOpacity
-        style={styles.aiFab}
-        onPress={() => router.push("/regular_user/assistant/assistant_main")}
-        activeOpacity={0.85}
-      >
-        <Ionicons name="chatbubble-ellipses" size={28} color="#ffffff" />
-      </TouchableOpacity>
+     
     </View>
   );
 }
