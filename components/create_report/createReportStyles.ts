@@ -1,6 +1,4 @@
-import { StyleSheet, Platform, Dimensions } from "react-native";
-
-const { width } = Dimensions.get("window");
+import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
@@ -191,6 +189,26 @@ export const styles = StyleSheet.create({
   },
   miniMap: {
     ...StyleSheet.absoluteFillObject,
+  },
+  miniMapFallback: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F0F9FF",
+    paddingHorizontal: 18,
+    paddingBottom: 42,
+  },
+  miniMapFallbackTitle: {
+    color: "#0F172A",
+    fontSize: 15,
+    fontWeight: "800",
+    marginTop: 8,
+  },
+  miniMapFallbackText: {
+    color: "#475569",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 6,
+    maxWidth: "100%",
   },
   miniMapOverlay: {
     position: "absolute",

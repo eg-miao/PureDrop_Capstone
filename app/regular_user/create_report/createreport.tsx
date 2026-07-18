@@ -110,7 +110,6 @@ export default function CreateReportScreen() {
       <GpsMapModal
         gpsLoading={form.gpsLoading}
         initialRegion={form.mapRegion}
-        selectedPin={form.selectedPin}
         visible={form.mapVisible}
         onCancel={() => form.setMapVisible(false)}
         onConfirm={form.handleConfirmMapLocation}

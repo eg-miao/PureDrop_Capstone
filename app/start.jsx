@@ -13,7 +13,7 @@ export default function StartScreen() {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.title}>Let's get started</Text>
+        <Text style={styles.title}>{"Let's get started"}</Text>
         <Text style={styles.subtitle}>Login or create a new account to continue</Text>
       </View>
 

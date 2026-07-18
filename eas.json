@@ -7,7 +7,10 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "environment": "development"
+      "environment": "development",
+      "env": {
+        "EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY": "AIzaSyClsR7XWwvYHQtRfFQTiw9Ob41fMD9elbA"
+      }
     },
     "preview": {
       "distribution": "internal",

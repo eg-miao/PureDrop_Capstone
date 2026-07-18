@@ -51,7 +51,7 @@ export function GpsMapModal({
         <View style={[styles.floatingBottomBar, { paddingBottom: Math.max(24, insets.bottom + 12) }]}>
           <View style={styles.floatingConfirmPanel}>
             <Text style={styles.floatingInstructionText}>
-              Drag the map to perfectly align the pin with your issue's location.
+              {"Drag the map to perfectly align the pin with your issue's location."}
             </Text>
             <TouchableOpacity style={styles.floatingConfirmButton} onPress={onConfirm} activeOpacity={0.85}>
               {gpsLoading ? (

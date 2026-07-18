@@ -2,12 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import {
   AttachmentMachineLearning,
   type AttachmentMachineLearningStatus,
 } from "./AttachmentMachineLearning";
 import { LightboxCreateReport } from "./LightboxCreateReport";
+import { MiniMapPreview } from "./MiniMapPreview";
 import { styles } from "./createReportStyles";
 import type { Attachment } from "./useCreateReportForm";
 
@@ -28,7 +28,7 @@ type CreateReportFormContentProps = {
   onIssueChange: (value: string) => void;
   onLocationChange: (value: string) => void;
   onPickAttachment: () => void;
-  onAttachmentReviewChange?: (status: any) => void;
+  onAttachmentReviewChange?: (status: AttachmentMachineLearningStatus) => void;
   onRemoveAttachment: (index: number) => void;
   onSubmit: () => void;
   onUseGps: () => void;
@@ -180,30 +180,7 @@ export function CreateReportFormContent({
           </View>
 
           {selectedPin ? (
-            <View style={styles.miniMapContainer}>
-              <MapView
-                provider={PROVIDER_GOOGLE}
-                style={styles.miniMap}
-                region={{
-                  latitude: selectedPin.latitude,
-                  longitude: selectedPin.longitude,
-                  latitudeDelta: 0.005,
-                  longitudeDelta: 0.005,
-                }}
-                scrollEnabled={false}
-                zoomEnabled={false}
-                pitchEnabled={false}
-                rotateEnabled={false}
-              >
-                <Marker coordinate={selectedPin} />
-              </MapView>
-              <View style={styles.miniMapOverlay}>
-                <Ionicons name="location" size={14} color="#0EA5E9" />
-                <Text style={styles.miniMapAddressText} numberOfLines={1}>
-                  {gpsLocation}
-                </Text>
-              </View>
-            </View>
+            <MiniMapPreview gpsLocation={gpsLocation} selectedPin={selectedPin} />
           ) : (
             <TouchableOpacity
               style={[styles.featureButton, gpsLoading && styles.featureButtonLoading]}

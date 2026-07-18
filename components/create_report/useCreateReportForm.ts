@@ -1,7 +1,7 @@
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import { useState } from "react";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 import { collection, doc, getDoc, runTransaction, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { getPublicFileUrl, uploadFile } from "../../api/storage";
 import { autoCategorizeIssue } from "../../lib/regular_user/assistant_api";
@@ -302,10 +302,12 @@ export function useCreateReportForm() {
         base64: true,
       });
     } else {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (permission.status !== "granted") {
-        Alert.alert("Permission needed", "Please allow photo library access.");
-        return;
+      if (Platform.OS !== "web") {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (permission.status !== "granted") {
+          Alert.alert("Permission needed", "Please allow photo library access.");
+          return;
+        }
       }
       result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -333,6 +335,11 @@ export function useCreateReportForm() {
   const handlePickAttachment = () => {
     if (attachments.length >= 2) {
       Alert.alert("Attachment limit", "Only 2 attachments are allowed.");
+      return;
+    }
+
+    if (Platform.OS === "web") {
+      void launchPicker("gallery");
       return;
     }
 
