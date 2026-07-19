@@ -111,7 +111,7 @@ export default function CreateReportScreen() {
         gpsLoading={form.gpsLoading}
         initialRegion={form.mapRegion}
         visible={form.mapVisible}
-        onCancel={() => form.setMapVisible(false)}
+        onCancel={form.handleCancelMapLocation}
         onConfirm={form.handleConfirmMapLocation}
         onRegionChangeComplete={form.handleRegionChangeComplete}
       />

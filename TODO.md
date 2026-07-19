@@ -1,0 +1,3 @@
+- [ ] Add MAPTILER API key to EAS env for preview + development so satellite tiles render
+- [ ] Rebuild/run app and verify “Open Map to Pin Location” loads satellite tiles
+- [ ] Verify map drag/pan works to move pin alignment

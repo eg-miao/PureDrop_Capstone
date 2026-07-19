@@ -230,7 +230,6 @@ export const styles = StyleSheet.create({
     color: "#334155",
     flex: 1,
   },
-
   // Attachments
   attachmentsText: {
     color: "#64748B",

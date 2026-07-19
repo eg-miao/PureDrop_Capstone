@@ -172,7 +172,7 @@ export function CreateReportFormContent({
 
           <View style={styles.gpsHeader}>
             <Text style={styles.label}>Pin Location on Map</Text>
-            {gpsLocation ? (
+            {selectedPin ? (
               <TouchableOpacity onPress={onUseGps} activeOpacity={0.7}>
                 <Text style={styles.repickText}>Change Pin</Text>
               </TouchableOpacity>
@@ -180,7 +180,9 @@ export function CreateReportFormContent({
           </View>
 
           {selectedPin ? (
-            <MiniMapPreview gpsLocation={gpsLocation} selectedPin={selectedPin} />
+            <TouchableOpacity onPress={onUseGps} activeOpacity={0.9}>
+              <MiniMapPreview gpsLocation={gpsLocation} selectedPin={selectedPin} />
+            </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={[styles.featureButton, gpsLoading && styles.featureButtonLoading]}

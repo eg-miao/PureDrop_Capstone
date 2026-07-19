@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { styles } from "./createReportStyles";
+import { OsmTileMap } from "./OsmTileMap.native";
 
 type Coordinate = {
   latitude: number;
@@ -14,28 +14,25 @@ type MiniMapPreviewProps = {
 };
 
 export function MiniMapPreview({ gpsLocation, selectedPin }: MiniMapPreviewProps) {
+  const label =
+    gpsLocation || `${selectedPin.latitude.toFixed(6)}, ${selectedPin.longitude.toFixed(6)}`;
+
   return (
     <View style={styles.miniMapContainer}>
-      <MapView
-        provider={PROVIDER_GOOGLE}
+      <OsmTileMap
         style={styles.miniMap}
-        region={{
+        initialRegion={{
           latitude: selectedPin.latitude,
           longitude: selectedPin.longitude,
           latitudeDelta: 0.005,
           longitudeDelta: 0.005,
         }}
-        scrollEnabled={false}
-        zoomEnabled={false}
-        pitchEnabled={false}
-        rotateEnabled={false}
-      >
-        <Marker coordinate={selectedPin} />
-      </MapView>
+        selectedPin={selectedPin}
+      />
       <View style={styles.miniMapOverlay}>
         <Ionicons name="location" size={14} color="#0EA5E9" />
         <Text style={styles.miniMapAddressText} numberOfLines={1}>
-          {gpsLocation}
+          {label}
         </Text>
       </View>
     </View>

@@ -1,5 +1,5 @@
-import MapView, { type Region as MapRegion } from "react-native-maps";
 import type { StyleProp, ViewStyle } from "react-native";
+import { OsmTileMap } from "./OsmTileMap.native";
 
 export type Coordinate = {
   latitude: number;
@@ -18,17 +18,12 @@ type MapPickerProps = {
 };
 
 export function MapPicker({ style, initialRegion, onRegionChangeComplete }: MapPickerProps) {
-  const handleRegionChangeComplete = (region: MapRegion) => {
-    onRegionChangeComplete(region);
-  };
-
   return (
-    <MapView 
-      style={style} 
-      initialRegion={initialRegion} 
-      onRegionChangeComplete={handleRegionChangeComplete}
-      showsUserLocation={true}
-      showsMyLocationButton={true}
+    <OsmTileMap
+      style={style}
+      initialRegion={initialRegion}
+      interactive
+      onRegionChangeComplete={onRegionChangeComplete}
     />
   );
 }

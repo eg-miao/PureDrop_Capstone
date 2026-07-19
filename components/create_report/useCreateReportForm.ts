@@ -123,6 +123,7 @@ export function useCreateReportForm() {
     longitudeDelta: 0.02,
   });
   const [selectedPin, setSelectedPin] = useState<Coordinate | null>(null);
+  const [confirmedPin, setConfirmedPin] = useState<Coordinate | null>(null);
 
   const getFileExtension = (attachment: Attachment) => {
     const cleanUri = attachment.uri.split("?")[0];
@@ -231,23 +232,22 @@ export function useCreateReportForm() {
         latitude: gpsResult.latitude,
         longitude: gpsResult.longitude,
       });
-
-      const pickedLocation = await getLocationFromCoordinates(
-        gpsResult.latitude,
-        gpsResult.longitude,
-      );
-      if (pickedLocation.isOutsideToledo) {
-        Alert.alert("Outside Toledo", "Your current location does not appear to be in Toledo City.");
-        return;
-      }
-      setGpsLocation(pickedLocation.formattedLocation);
+      setMapVisible(true);
     } catch (error) {
       if (error instanceof Error && error.message === "LOCATION_PERMISSION_DENIED") {
-        Alert.alert("Permission needed", "Please allow location access to use GPS.");
-        return;
+        Alert.alert(
+          "Permission needed",
+          "Please allow location access to center the map on your current position. You can still pin the location manually.",
+        );
+      } else {
+        Alert.alert("GPS error", "Could not fetch current location. You can still pin the location manually.");
       }
 
-      Alert.alert("GPS error", "Could not fetch current location. Please try again.");
+      setSelectedPin({
+        latitude: mapRegion.latitude,
+        longitude: mapRegion.longitude,
+      });
+      setMapVisible(true);
     } finally {
       setGpsLoading(false);
     }
@@ -279,12 +279,29 @@ export function useCreateReportForm() {
       }
 
       setGpsLocation(pickedLocation.formattedLocation);
+      setConfirmedPin(selectedPin);
       setMapVisible(false);
     } catch {
       Alert.alert("GPS error", "Could not resolve selected map location.");
     } finally {
       setGpsLoading(false);
     }
+  };
+
+  const handleCancelMapLocation = () => {
+    setMapVisible(false);
+
+    if (confirmedPin) {
+      setSelectedPin(confirmedPin);
+      setMapRegion((current) => ({
+        ...current,
+        latitude: confirmedPin.latitude,
+        longitude: confirmedPin.longitude,
+      }));
+      return;
+    }
+
+    setSelectedPin(null);
   };
 
   const launchPicker = async (source: "camera" | "gallery") => {
@@ -505,6 +522,7 @@ export function useCreateReportForm() {
       setWaterMeter("");
       setAttachments([]);
       setSelectedPin(null);
+      setConfirmedPin(null);
 
       return true;
     } catch (error) {
@@ -524,6 +542,7 @@ export function useCreateReportForm() {
     gpsLoading,
     gpsLocation,
     handleConfirmMapLocation,
+    handleCancelMapLocation,
     handleRegionChangeComplete,
     handlePickAttachment,
     handleRemoveAttachment,
