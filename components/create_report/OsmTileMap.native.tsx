@@ -164,7 +164,7 @@ export function OsmTileMap({
     notifyRegionChange(nextCenter, nextZoom);
   };
 
-  const apiKey = (process as any)?.env?.EXPO_PUBLIC_MAPTILER_API_KEY as string | undefined;
+  const apiKey: string | undefined = process.env.EXPO_PUBLIC_MAPTILER_API_KEY;
 
   const tiles = useMemo(() => {
     if (!layout.width || !layout.height) {
