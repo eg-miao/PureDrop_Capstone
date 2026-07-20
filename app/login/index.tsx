@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { type Href, useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Alert,
   Image,
@@ -25,6 +25,9 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+  
+  const passwordRef = useRef<TextInput>(null);
 
   const handleLogin = async () => {
     try {
@@ -66,24 +69,34 @@ export default function LoginScreen() {
         <View style={styles.form}>
           <Text style={styles.label}>Email</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, focusedField === "email" && styles.inputFocused]}
             value={email}
             onChangeText={setEmail}
+            onFocus={() => setFocusedField("email")}
+            onBlur={() => setFocusedField(null)}
             keyboardType="email-address"
             autoCapitalize="none"
+            returnKeyType="next"
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            blurOnSubmit={false}
           />
 
           <Text style={styles.label}>Password</Text>
-          <View style={styles.passwordWrap}>
+          <View style={[styles.passwordWrap, focusedField === "password" && styles.inputFocused]}>
             <TextInput
+              ref={passwordRef}
               style={styles.passwordInput}
               value={password}
               onChangeText={setPassword}
+              onFocus={() => setFocusedField("password")}
+              onBlur={() => setFocusedField(null)}
               secureTextEntry={!showPassword}
               textContentType="password"
               autoComplete="password"
               autoCapitalize="none"
               autoCorrect={false}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
             />
             <TouchableOpacity
               style={styles.eyeButton}
@@ -184,6 +197,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: "#0F172A",
     fontSize: 16,
+  },
+
+  inputFocused: {
+    borderColor: "#0EA5E9",
+    borderWidth: 1.5,
   },
 
   passwordWrap: {

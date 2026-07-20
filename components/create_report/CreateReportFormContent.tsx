@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useMemo, useState } from "react";
-import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useMemo, useState, useRef } from "react";
+import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   AttachmentMachineLearning,
@@ -62,6 +62,8 @@ export function CreateReportFormContent({
 }: CreateReportFormContentProps) {
   const [addressModalVisible, setAddressModalVisible] = useState(false);
   const insets = useSafeAreaInsets();
+  const locationRef = useRef<TextInput>(null);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const mobileScrollProps = useMemo(() => {
     if (Platform.OS === "web") {
@@ -128,7 +130,9 @@ export function CreateReportFormContent({
           <TextInput
             value={issue}
             onChangeText={onIssueChange}
-            style={styles.textArea}
+            style={[styles.textArea, focusedField === "issue" && styles.inputFocused]}
+            onFocus={() => setFocusedField("issue")}
+            onBlur={() => setFocusedField(null)}
             multiline
             textAlignVertical="top"
             placeholder="Please provide details about the problem..."
@@ -139,10 +143,18 @@ export function CreateReportFormContent({
           <TextInput
             value={waterMeter}
             onChangeText={onWaterMeterChange}
-            style={styles.input}
+            style={[styles.input, focusedField === "waterMeter" && styles.inputFocused]}
+            onFocus={() => setFocusedField("waterMeter")}
+            onBlur={() => setFocusedField(null)}
             placeholder="Enter meter reading"
             placeholderTextColor="#94A3B8"
             keyboardType="numeric"
+            returnKeyType="next"
+            onSubmitEditing={() => {
+              Keyboard.dismiss();
+              setAddressModalVisible(true);
+            }}
+            blurOnSubmit={true}
           />
         </View>
 
@@ -151,7 +163,7 @@ export function CreateReportFormContent({
 
           <Text style={styles.label}>Barangay</Text>
           <TouchableOpacity
-            style={[styles.input, styles.addressPickerTrigger]}
+            style={[styles.input, styles.addressPickerTrigger, addressModalVisible && styles.inputFocused]}
             activeOpacity={0.85}
             onPress={() => setAddressModalVisible(true)}
           >
@@ -163,11 +175,16 @@ export function CreateReportFormContent({
 
           <Text style={styles.label}>Landmark / Specific Location</Text>
           <TextInput
+            ref={locationRef}
             value={location}
             onChangeText={onLocationChange}
-            style={styles.input}
+            style={[styles.input, focusedField === "location" && styles.inputFocused]}
+            onFocus={() => setFocusedField("location")}
+            onBlur={() => setFocusedField(null)}
             placeholder="e.g. In front of the chapel"
             placeholderTextColor="#94A3B8"
+            returnKeyType="done"
+            onSubmitEditing={() => Keyboard.dismiss()}
           />
 
           <View style={styles.gpsHeader}>

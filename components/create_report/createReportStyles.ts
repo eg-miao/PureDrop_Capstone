@@ -128,6 +128,10 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 15,
   },
+  inputFocused: {
+    borderColor: "#0EA5E9",
+    borderWidth: 1.5,
+  },
   
   // Address Picker
   addressPickerTrigger: {

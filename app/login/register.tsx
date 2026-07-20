@@ -46,6 +46,12 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
+  const waterMeterRef = useRef<TextInput>(null);
 
   const clearWaterMeterScrollTimeout = useCallback((): void => {
     if (waterMeterScrollTimeoutRef.current) {
@@ -217,9 +223,17 @@ export default function RegisterScreen() {
         <View style={styles.form}>
           <Text style={styles.label}>Full Name (eg. Juan Dela Cruz)</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, focusedField === "fullName" && styles.inputFocused]}
             value={fullName}
             onChangeText={setFullName}
+            onFocus={() => setFocusedField("fullName")}
+            onBlur={() => setFocusedField(null)}
+            returnKeyType="next"
+            onSubmitEditing={() => {
+              Keyboard.dismiss();
+              openAddressSelector();
+            }}
+            blurOnSubmit={true}
           />
 
           <Text style={styles.label}>Address</Text>
@@ -235,24 +249,36 @@ export default function RegisterScreen() {
 
           <Text style={styles.label}>Email</Text>
           <TextInput
-            style={styles.input}
+            ref={emailRef}
+            style={[styles.input, focusedField === "email" && styles.inputFocused]}
             value={email}
             onChangeText={setEmail}
+            onFocus={() => setFocusedField("email")}
+            onBlur={() => setFocusedField(null)}
             keyboardType="email-address"
             autoCapitalize="none"
+            returnKeyType="next"
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            blurOnSubmit={false}
           />
 
           <Text style={styles.label}>Password</Text>
-          <View style={styles.passwordWrap}>
+          <View style={[styles.passwordWrap, focusedField === "password" && styles.inputFocused]}>
             <TextInput
+              ref={passwordRef}
               style={styles.passwordInput}
               value={password}
               onChangeText={setPassword}
+              onFocus={() => setFocusedField("password")}
+              onBlur={() => setFocusedField(null)}
               secureTextEntry={!showPassword}
               textContentType="newPassword"
               autoComplete="new-password"
               autoCapitalize="none"
               autoCorrect={false}
+              returnKeyType="next"
+              onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+              blurOnSubmit={false}
             />
             <TouchableOpacity
               style={styles.eyeButton}
@@ -269,16 +295,22 @@ export default function RegisterScreen() {
           </View>
 
           <Text style={styles.label}>Confirm Password</Text>
-          <View style={styles.passwordWrap}>
+          <View style={[styles.passwordWrap, focusedField === "confirmPassword" && styles.inputFocused]}>
             <TextInput
+              ref={confirmPasswordRef}
               style={styles.passwordInput}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
+              onFocus={() => setFocusedField("confirmPassword")}
+              onBlur={() => setFocusedField(null)}
               secureTextEntry={!showConfirmPassword}
               textContentType="newPassword"
               autoComplete="new-password"
               autoCapitalize="none"
               autoCorrect={false}
+              returnKeyType="next"
+              onSubmitEditing={() => waterMeterRef.current?.focus()}
+              blurOnSubmit={false}
             />
             <TouchableOpacity
               style={styles.eyeButton}
@@ -302,12 +334,19 @@ export default function RegisterScreen() {
           >
             <Text style={styles.label}>Water Meter (m3)</Text>
             <TextInput
-              style={styles.input}
+              ref={waterMeterRef}
+              style={[styles.input, focusedField === "waterMeter" && styles.inputFocused]}
               value={waterMeter}
               onChangeText={setWaterMeter}
-              onFocus={scrollWaterMeterAboveKeyboard}
+              onFocus={() => {
+                setFocusedField("waterMeter");
+                scrollWaterMeterAboveKeyboard();
+              }}
+              onBlur={() => setFocusedField(null)}
               onPressIn={scrollWaterMeterAboveKeyboard}
               keyboardType="numeric"
+              returnKeyType="done"
+              onSubmitEditing={handleRegister}
             />
           </View>
         </View>
@@ -390,6 +429,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     color: "#0F172A",
     fontSize: 16,
+  },
+
+  inputFocused: {
+    borderColor: "#0EA5E9",
+    borderWidth: 1.5,
   },
 
   passwordWrap: {

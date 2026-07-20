@@ -31,6 +31,7 @@ type ForgotPasswordStep = "email" | "code" | "password" | "success";
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const codeInputRef = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
 
   const [step, setStep] = useState<ForgotPasswordStep>("email");
   const [email, setEmail] = useState("");
@@ -40,6 +41,7 @@ export default function ForgotPasswordScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const formattedEmail = email.trim();
 
@@ -121,14 +123,18 @@ export default function ForgotPasswordScreen() {
       <View style={styles.form}>
         <Text style={styles.label}>Email</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, focusedField === "email" && styles.inputFocused]}
           value={email}
           onChangeText={setEmail}
+          onFocus={() => setFocusedField("email")}
+          onBlur={() => setFocusedField(null)}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
           textContentType="emailAddress"
           autoComplete="email"
+          returnKeyType="done"
+          onSubmitEditing={handleSendCode}
         />
       </View>
 
@@ -155,7 +161,7 @@ export default function ForgotPasswordScreen() {
         accessibilityLabel="Enter reset code"
       >
         {Array.from({ length: CODE_LENGTH }).map((_, index) => (
-          <View key={index} style={styles.pinBox}>
+          <View key={index} style={[styles.pinBox, focusedField === "code" && code.length === index && styles.inputFocused]}>
             <Text style={styles.pinDigit}>{code[index] ?? ""}</Text>
           </View>
         ))}
@@ -165,11 +171,15 @@ export default function ForgotPasswordScreen() {
         ref={codeInputRef}
         value={code}
         onChangeText={handleCodeChange}
+        onFocus={() => setFocusedField("code")}
+        onBlur={() => setFocusedField(null)}
         keyboardType="number-pad"
         textContentType="oneTimeCode"
         autoComplete="sms-otp"
         maxLength={CODE_LENGTH}
         style={styles.hiddenInput}
+        returnKeyType="done"
+        onSubmitEditing={handleVerifyCode}
       />
 
       <TouchableOpacity
@@ -189,16 +199,21 @@ export default function ForgotPasswordScreen() {
 
       <View style={styles.form}>
         <Text style={styles.label}>Password</Text>
-        <View style={styles.passwordRow}>
+        <View style={[styles.passwordRow, focusedField === "password" && styles.inputFocused]}>
           <TextInput
             style={styles.passwordInput}
             value={password}
             onChangeText={setPassword}
+            onFocus={() => setFocusedField("password")}
+            onBlur={() => setFocusedField(null)}
             secureTextEntry={!showPassword}
             textContentType="newPassword"
             autoComplete="new-password"
             autoCapitalize="none"
             autoCorrect={false}
+            returnKeyType="next"
+            onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+            blurOnSubmit={false}
           />
           <TouchableOpacity
             onPress={() => setShowPassword(!showPassword)}
@@ -214,16 +229,21 @@ export default function ForgotPasswordScreen() {
         </View>
 
         <Text style={styles.label}>Confirm Password</Text>
-        <View style={styles.passwordRow}>
+        <View style={[styles.passwordRow, focusedField === "confirmPassword" && styles.inputFocused]}>
           <TextInput
+            ref={confirmPasswordRef}
             style={styles.passwordInput}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
+            onFocus={() => setFocusedField("confirmPassword")}
+            onBlur={() => setFocusedField(null)}
             secureTextEntry={!showConfirmPassword}
             textContentType="newPassword"
             autoComplete="new-password"
             autoCapitalize="none"
             autoCorrect={false}
+            returnKeyType="done"
+            onSubmitEditing={handleResetPassword}
           />
           <TouchableOpacity
             onPress={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -350,6 +370,11 @@ const styles = StyleSheet.create({
     color: "#0F172A",
     width: "100%",
     fontSize: 16,
+  },
+
+  inputFocused: {
+    borderColor: "#0EA5E9",
+    borderWidth: 1.5,
   },
 
   passwordRow: {
