@@ -26,7 +26,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
-  
+
   const passwordRef = useRef<TextInput>(null);
 
   const handleLogin = async () => {

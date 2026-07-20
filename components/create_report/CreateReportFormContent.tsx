@@ -125,7 +125,7 @@ export function CreateReportFormContent({
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Issue Details</Text>
-          
+
           <Text style={styles.label}>Describe the issue</Text>
           <TextInput
             value={issue}
@@ -263,3 +263,4 @@ export function CreateReportFormContent({
     </>
   );
 }
+
