@@ -185,11 +185,19 @@ export default function MyReportScreen() {
     });
   };
 
+  const handleCreateReport = () => {
+    try {
+      router.push("/regular_user/report");
+    } catch {
+      // Silently fail - navigation errors should not crash the app
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#ffffff" />
+          <ActivityIndicator size="large" color="#0284c7" />
         </View>
       </SafeAreaView>
     );
@@ -214,7 +222,25 @@ export default function MyReportScreen() {
         data={reports}
         keyExtractor={(item) => item.reportId}
         contentContainerStyle={styles.listContent}
-        ListEmptyComponent={<Text style={styles.emptyText}>No reports submitted yet.</Text>}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIconWrap}>
+              <Ionicons name="clipboard-outline" size={48} color="#94A3B8" />
+            </View>
+            <Text style={styles.emptyTitle}>No reports submitted yet</Text>
+            <Text style={styles.emptySubtitle}>
+              Your submitted water reports will appear here. Tap the button below to submit your first report.
+            </Text>
+            <TouchableOpacity
+              style={styles.emptyCta}
+              onPress={handleCreateReport}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="add-circle" size={20} color="#FFFFFF" />
+              <Text style={styles.emptyCtaText}>Submit Your First Report</Text>
+            </TouchableOpacity>
+          </View>
+        }
         renderItem={({ item }) => (
           <ReportRow
             item={item}
@@ -298,6 +324,56 @@ const styles = StyleSheet.create({
     color: "#64748B",
     fontSize: 13,
     marginTop: 4,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 60,
+    paddingHorizontal: 24,
+  },
+  emptyIconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    color: "#0F172A",
+    fontSize: 20,
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  emptySubtitle: {
+    color: "#64748B",
+    fontSize: 15,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 28,
+    maxWidth: 300,
+  },
+  emptyCta: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#0EA5E9",
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 16,
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  emptyCtaText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
   },
   emptyText: {
     color: "#64748B",

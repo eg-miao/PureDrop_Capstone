@@ -57,6 +57,7 @@ export default function ViewReportUserScreen() {
   const { reportId, userId } = useLocalSearchParams<{ reportId?: string; userId?: string }>();
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<DetailedReport | null>(null);
+  const [retryToggle, setRetryToggle] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -116,8 +117,8 @@ export default function ViewReportUserScreen() {
       }
     });
 
-    return () => unsubscribe();
-  }, [reportId, userId]);
+return () => unsubscribe();
+  }, [reportId, userId, retryToggle]);
 
   if (loading) {
     return (
@@ -129,14 +130,37 @@ export default function ViewReportUserScreen() {
     );
   }
 
+  const handleRetry = () => {
+    try {
+      setLoading(true);
+      setReport(null);
+      // Re-trigger the effect by forcing a re-render via a state toggle
+      setRetryToggle((prev) => !prev);
+    } catch {
+      // Silently fail — retry should not crash the app
+    }
+  };
+
   if (!report) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.centered}>
-          <Text style={styles.emptyText}>Report not found.</Text>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>Go Back</Text>
-          </TouchableOpacity>
+          <View style={styles.errorIconWrap}>
+            <Ionicons name="document-text-outline" size={48} color="#94A3B8" />
+          </View>
+          <Text style={styles.emptyTitle}>Report not found</Text>
+          <Text style={styles.emptyText}>
+            The report you're looking for could not be loaded. It may have been removed or you may have a connection issue.
+          </Text>
+          <View style={styles.errorActions}>
+            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+              <Text style={styles.backButtonText}>Go Back</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.retryButton} onPress={handleRetry} activeOpacity={0.85}>
+              <Ionicons name="refresh-outline" size={18} color="#FFFFFF" />
+              <Text style={styles.retryButtonText}>Try Again</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -299,6 +323,43 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   backButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  errorIconWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    color: "#0F172A",
+    fontSize: 20,
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  errorActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 12,
+  },
+  retryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: "#334155",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 16,
+  },
+  retryButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "700",

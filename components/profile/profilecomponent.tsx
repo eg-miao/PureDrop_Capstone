@@ -1,4 +1,3 @@
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import {
   ActivityIndicator,
@@ -8,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export interface ProfileViewModel {
   fullName: string;
@@ -59,7 +59,15 @@ export default function ProfileComponent({
           <>
             <Text style={styles.nameText}>{profile?.fullName || "User"}</Text>
 
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            {error ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+                <TouchableOpacity style={styles.retryButton} onPress={onBack} activeOpacity={0.85}>
+                  <Ionicons name="refresh-outline" size={16} color="#FFFFFF" />
+                  <Text style={styles.retryButtonText}>Go Back</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
 
             <TouchableOpacity
               style={[styles.changePhotoButton, uploadingAvatar && styles.changePhotoButtonDisabled]}
@@ -163,6 +171,28 @@ const styles = StyleSheet.create({
     color: "#ef4444",
     marginBottom: 10,
     textAlign: "center",
+  },
+  errorContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  retryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: "#0284c7",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
   },
   changePhotoButton: {
     backgroundColor: "#0284c7",

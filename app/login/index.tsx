@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { type Href, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Image,
@@ -21,6 +21,7 @@ const FORGOT_PASSWORD_ROUTE = "/login/forgot_password" as Href;
 
 export default function LoginScreen() {
   const router = useRouter();
+  const passwordRef = useRef<TextInput>(null);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,6 +31,14 @@ export default function LoginScreen() {
   useEffect(() => {
     finishLogout();
   }, []);
+
+  const focusPassword = () => {
+    try {
+      passwordRef.current?.focus();
+    } catch {
+      // Silently fail — focus errors should not crash the app
+    }
+  };
 
   const handleLogin = async () => {
     try {
@@ -76,11 +85,15 @@ export default function LoginScreen() {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+            returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={focusPassword}
           />
 
           <Text style={styles.label}>Password</Text>
           <View style={styles.passwordWrap}>
             <TextInput
+              ref={passwordRef}
               style={styles.passwordInput}
               value={password}
               onChangeText={setPassword}
