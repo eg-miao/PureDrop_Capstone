@@ -15,10 +15,10 @@ import {
   AttachmentMachineLearning,
   type AttachmentMachineLearningStatus,
 } from "./AttachmentMachineLearning";
-import { LightboxCreateReport } from "./LightboxCreateReport";
-import { MiniMapPreview } from "./MiniMapPreview";
 import { useCreateReportKeyboardScroll } from "./create_reportbehavior";
 import { styles } from "./createReportStyles";
+import { LightboxCreateReport } from "./LightboxCreateReport";
+import { MiniMapPreview } from "./MiniMapPreview";
 import type { Attachment } from "./useCreateReportForm";
 
 type CreateReportFormContentProps = {
@@ -46,6 +46,7 @@ type CreateReportFormContentProps = {
 };
 
 const CATEGORY_OPTIONS = ["No water", "Dirty water", "Water leaking"];
+const ISSUE_MAX_LENGTH = 500;
 
 export function CreateReportFormContent({
   address,
@@ -76,6 +77,7 @@ export function CreateReportFormContent({
     scrollViewRef,
     createReportInputRef,
     createReportFieldLayout,
+    createReportSectionLayout,
     followFocusedField,
     focusNextField,
     handleScroll,
@@ -106,7 +108,7 @@ export function CreateReportFormContent({
             styles.content,
             { paddingTop: Math.max(22, insets.top + 10) },
           ]}
-          keyboardDismissMode="interactive"
+          keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
           onScroll={handleScroll}
           onScrollBeginDrag={handleScrollBeginDrag}
@@ -150,7 +152,10 @@ export function CreateReportFormContent({
             })}
           </ScrollView>
 
-          <View style={styles.card}>
+          <View
+            style={styles.card}
+            onLayout={createReportSectionLayout("details")}
+          >
             <Text style={styles.cardTitle}>Issue Details</Text>
 
             <View onLayout={createReportFieldLayout("issue")}>
@@ -164,9 +169,22 @@ export function CreateReportFormContent({
                 style={styles.textArea}
                 multiline
                 textAlignVertical="top"
+                maxLength={ISSUE_MAX_LENGTH}
                 placeholder="Please provide details about the problem..."
                 placeholderTextColor="#94A3B8"
               />
+              <Text
+                style={{
+                  color: "#94A3B8",
+                  fontSize: 12,
+                  fontWeight: "600",
+                  marginTop: -14,
+                  marginBottom: 16,
+                  textAlign: "right",
+                }}
+              >
+                {issue.length}/{ISSUE_MAX_LENGTH}
+              </Text>
             </View>
 
             <View onLayout={createReportFieldLayout("waterMeter")}>
@@ -188,7 +206,10 @@ export function CreateReportFormContent({
             </View>
           </View>
 
-          <View style={styles.card}>
+          <View
+            style={styles.card}
+            onLayout={createReportSectionLayout("location")}
+          >
             <Text style={styles.cardTitle}>Location Information</Text>
 
             <Text style={styles.label}>Barangay</Text>
