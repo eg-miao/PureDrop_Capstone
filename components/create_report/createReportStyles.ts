@@ -5,6 +5,9 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F1F5F9",
   },
+  keyboardView: {
+    flex: 1,
+  },
   formScroll: {
     flex: 1,
   },
