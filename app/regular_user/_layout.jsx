@@ -12,6 +12,7 @@ export default function RegularUserLayout() {
   const router = useRouter();
   const pathname = usePathname();
   const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const redirectingRef = useRef(false);
   const { unreadCount, markAllAsRead } = useReportNotifications();
@@ -26,12 +27,14 @@ export default function RegularUserLayout() {
       }
 
       if (!currentUser) {
+        setIsAuthenticated(false);
         setProfileImageUrl(null);
         if (!redirectingRef.current) {
           redirectingRef.current = true;
           router.replace("/login");
         }
       } else {
+        setIsAuthenticated(true);
         redirectingRef.current = false;
         const userRef = doc(db, "regular_user", currentUser.uid);
         unsubscribeProfile = onSnapshot(
@@ -75,7 +78,7 @@ export default function RegularUserLayout() {
     ? { uri: profileImageUrl }
     : require("../../assets/images/default_account.png");
 
-  if (!authChecked) {
+  if (!authChecked || !isAuthenticated) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator size="large" color="#1e88e5" />

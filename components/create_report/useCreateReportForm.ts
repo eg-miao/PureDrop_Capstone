@@ -534,6 +534,27 @@ export function useCreateReportForm() {
     }
   };
 
+  const resetForm = () => {
+    void cleanupCachedAttachments(attachments);
+
+    setCategory("");
+    setAddress("");
+    setLocation("");
+    setGpsLocation("");
+    setIssue("");
+    setWaterMeter("");
+    setAttachments([]);
+    setMapVisible(false);
+    setMapRegion({
+      latitude: 10.3775,
+      longitude: 123.6388,
+      latitudeDelta: 0.02,
+      longitudeDelta: 0.02,
+    });
+    setSelectedPin(null);
+    setConfirmedPin(null);
+  };
+
   return {
     aiCategorizing,
     address,
@@ -553,6 +574,7 @@ export function useCreateReportForm() {
     location,
     mapRegion,
     mapVisible,
+    resetForm,
     selectedPin,
     setAddress,
     setCategory,
