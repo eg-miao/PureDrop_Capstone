@@ -25,17 +25,12 @@ import { prepareRegistrationParams } from "../../lib/login/registerfunctions";
 
 const isMobile = Platform.OS !== "web";
 
+/** Offset above the field to keep some label/padding visible */
+const SCROLL_OFFSET = 130;
+
 export default function RegisterScreen() {
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
-  const currentScrollYRef = useRef(0);
-  const waterMeterYRef = useRef(0);
-  const waterMeterReturnYRef = useRef(0);
-  const waterMeterFocusedRef = useRef(false);
-  const waterMeterUserScrolledRef = useRef(false);
-  const waterMeterScrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
 
   const [fullName, setFullName] = useState<string>("");
   const [address, setAddress] = useState<string>("");
@@ -48,89 +43,36 @@ export default function RegisterScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  // TextInput refs for focus chaining
+  const fullNameRef = useRef<TextInput>(null);
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
   const waterMeterRef = useRef<TextInput>(null);
 
-  const clearWaterMeterScrollTimeout = useCallback((): void => {
-    if (waterMeterScrollTimeoutRef.current) {
-      clearTimeout(waterMeterScrollTimeoutRef.current);
-      waterMeterScrollTimeoutRef.current = null;
+  // Layout Y positions of each field wrapper (relative to ScrollView content)
+  const fieldYPositions = useRef<Record<string, number>>({});
+
+  const scrollToField = useCallback((fieldName: string) => {
+    const y = fieldYPositions.current[fieldName];
+    if (y !== undefined && scrollViewRef.current) {
+      const targetY = Math.max(y - SCROLL_OFFSET, 0);
+      scrollViewRef.current.scrollTo({ y: targetY, animated: true });
     }
   }, []);
 
-  const scrollToWaterMeterPosition = useCallback((): void => {
-    const targetY = Math.max(waterMeterYRef.current - 130, 0);
-    scrollViewRef.current?.scrollTo({ y: targetY, animated: true });
-  }, []);
-
-  const scrollWaterMeterAboveKeyboard = useCallback((): void => {
-    if (isMobile) {
-      const wasAlreadyFocused = waterMeterFocusedRef.current;
-
-      waterMeterFocusedRef.current = true;
-
-      if (!wasAlreadyFocused) {
-        waterMeterUserScrolledRef.current = false;
-        waterMeterReturnYRef.current = currentScrollYRef.current;
-      }
-
-      clearWaterMeterScrollTimeout();
-
-      waterMeterScrollTimeoutRef.current = setTimeout(() => {
-        if (waterMeterFocusedRef.current && !waterMeterUserScrolledRef.current) {
-          scrollToWaterMeterPosition();
-        }
-      }, 250);
-    }
-  }, [clearWaterMeterScrollTimeout, scrollToWaterMeterPosition]);
-
-  const restoreWaterMeterScroll = useCallback((): void => {
-    clearWaterMeterScrollTimeout();
-
-    if (!waterMeterFocusedRef.current) {
-      return;
-    }
-
-    waterMeterFocusedRef.current = false;
-
-    if (waterMeterUserScrolledRef.current) {
-      waterMeterUserScrolledRef.current = false;
-      return;
-    }
-
-    scrollViewRef.current?.scrollTo({
-      y: waterMeterReturnYRef.current,
-      animated: true,
-    });
-  }, [clearWaterMeterScrollTimeout]);
-
+  // When the keyboard shows while a field is focused, re-scroll to that field
   useEffect(() => {
-    if (isMobile) {
-      const keyboardShowSubscription = Keyboard.addListener("keyboardDidShow", () => {
-        if (waterMeterFocusedRef.current && !waterMeterUserScrolledRef.current) {
-          scrollToWaterMeterPosition();
-        }
-      });
-      const keyboardHideSubscription = Keyboard.addListener(
-        "keyboardDidHide",
-        restoreWaterMeterScroll,
-      );
+    if (!isMobile) return undefined;
 
-      return () => {
-        keyboardShowSubscription.remove();
-        keyboardHideSubscription.remove();
-        clearWaterMeterScrollTimeout();
-      };
-    }
+    const sub = Keyboard.addListener("keyboardDidShow", () => {
+      if (focusedField) {
+        scrollToField(focusedField);
+      }
+    });
 
-    return undefined;
-  }, [
-    clearWaterMeterScrollTimeout,
-    restoreWaterMeterScroll,
-    scrollToWaterMeterPosition,
-  ]);
+    return () => sub.remove();
+  }, [focusedField, scrollToField]);
 
   useFocusEffect(
     useCallback(() => {
@@ -188,6 +130,17 @@ export default function RegisterScreen() {
     }
   };
 
+  /** Helper to register a field's Y position via onLayout */
+  const onFieldLayout = (fieldName: string) => (event: { nativeEvent: { layout: { y: number } } }) => {
+    fieldYPositions.current[fieldName] = event.nativeEvent.layout.y;
+  };
+
+  /** Focus handler that also scrolls to the field */
+  const handleFieldFocus = (fieldName: string) => {
+    setFocusedField(fieldName);
+    scrollToField(fieldName);
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -199,15 +152,6 @@ export default function RegisterScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
-        onScroll={(event) => {
-          currentScrollYRef.current = event.nativeEvent.contentOffset.y;
-        }}
-        onScrollBeginDrag={() => {
-          if (waterMeterFocusedRef.current) {
-            waterMeterUserScrolledRef.current = true;
-            clearWaterMeterScrollTimeout();
-          }
-        }}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
@@ -221,129 +165,137 @@ export default function RegisterScreen() {
         <Text style={styles.subtitle}>Sign up to get started</Text>
 
         <View style={styles.form}>
-          <Text style={styles.label}>Full Name (eg. Juan Dela Cruz)</Text>
-          <TextInput
-            style={[styles.input, focusedField === "fullName" && styles.inputFocused]}
-            value={fullName}
-            onChangeText={setFullName}
-            onFocus={() => setFocusedField("fullName")}
-            onBlur={() => setFocusedField(null)}
-            returnKeyType="next"
-            onSubmitEditing={() => {
-              Keyboard.dismiss();
-              openAddressSelector();
-            }}
-            blurOnSubmit={true}
-          />
-
-          <Text style={styles.label}>Address</Text>
-          <TouchableOpacity
-            style={styles.input}
-            activeOpacity={0.8}
-            onPress={openAddressSelector}
-          >
-            <Text style={address ? styles.inputText : styles.placeholderText}>
-              {address || "Select your barangay"}
-            </Text>
-          </TouchableOpacity>
-
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            ref={emailRef}
-            style={[styles.input, focusedField === "email" && styles.inputFocused]}
-            value={email}
-            onChangeText={setEmail}
-            onFocus={() => setFocusedField("email")}
-            onBlur={() => setFocusedField(null)}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            returnKeyType="next"
-            onSubmitEditing={() => passwordRef.current?.focus()}
-            blurOnSubmit={false}
-          />
-
-          <Text style={styles.label}>Password</Text>
-          <View style={[styles.passwordWrap, focusedField === "password" && styles.inputFocused]}>
+          {/* Full Name */}
+          <View onLayout={onFieldLayout("fullName")}>
+            <Text style={styles.label}>Full Name (eg. Juan Dela Cruz)</Text>
             <TextInput
-              ref={passwordRef}
-              style={styles.passwordInput}
-              value={password}
-              onChangeText={setPassword}
-              onFocus={() => setFocusedField("password")}
+              ref={fullNameRef}
+              style={[styles.input, focusedField === "fullName" && styles.inputFocused]}
+              value={fullName}
+              onChangeText={setFullName}
+              onFocus={() => handleFieldFocus("fullName")}
               onBlur={() => setFocusedField(null)}
-              secureTextEntry={!showPassword}
-              textContentType="newPassword"
-              autoComplete="new-password"
-              autoCapitalize="none"
-              autoCorrect={false}
               returnKeyType="next"
-              onSubmitEditing={() => confirmPasswordRef.current?.focus()}
-              blurOnSubmit={false}
+              onSubmitEditing={() => {
+                Keyboard.dismiss();
+                openAddressSelector();
+              }}
+              blurOnSubmit={true}
             />
+          </View>
+
+          {/* Address (selection field) */}
+          <View onLayout={onFieldLayout("address")}>
+            <Text style={styles.label}>Address</Text>
             <TouchableOpacity
-              style={styles.eyeButton}
-              onPress={() => setShowPassword((prev) => !prev)}
+              style={styles.input}
               activeOpacity={0.8}
-              accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+              onPress={openAddressSelector}
             >
-              <Ionicons
-                name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={22}
-                color="#475569"
-              />
+              <Text style={address ? styles.inputText : styles.placeholderText}>
+                {address || "Select your barangay"}
+              </Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.label}>Confirm Password</Text>
-          <View style={[styles.passwordWrap, focusedField === "confirmPassword" && styles.inputFocused]}>
+          {/* Email */}
+          <View onLayout={onFieldLayout("email")}>
+            <Text style={styles.label}>Email</Text>
             <TextInput
-              ref={confirmPasswordRef}
-              style={styles.passwordInput}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              onFocus={() => setFocusedField("confirmPassword")}
+              ref={emailRef}
+              style={[styles.input, focusedField === "email" && styles.inputFocused]}
+              value={email}
+              onChangeText={setEmail}
+              onFocus={() => handleFieldFocus("email")}
               onBlur={() => setFocusedField(null)}
-              secureTextEntry={!showConfirmPassword}
-              textContentType="newPassword"
-              autoComplete="new-password"
+              keyboardType="email-address"
               autoCapitalize="none"
-              autoCorrect={false}
               returnKeyType="next"
-              onSubmitEditing={() => waterMeterRef.current?.focus()}
+              onSubmitEditing={() => passwordRef.current?.focus()}
               blurOnSubmit={false}
             />
-            <TouchableOpacity
-              style={styles.eyeButton}
-              onPress={() => setShowConfirmPassword((prev) => !prev)}
-              activeOpacity={0.8}
-              accessibilityLabel={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
-            >
-              <Ionicons
-                name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
-                size={22}
-                color="#475569"
-              />
-            </TouchableOpacity>
           </View>
 
-          <View
-            style={styles.fieldGroup}
-            onLayout={(event) => {
-              waterMeterYRef.current = event.nativeEvent.layout.y;
-            }}
-          >
+          {/* Password */}
+          <View onLayout={onFieldLayout("password")}>
+            <Text style={styles.label}>Password</Text>
+            <View style={[styles.passwordWrap, focusedField === "password" && styles.inputFocused]}>
+              <TextInput
+                ref={passwordRef}
+                style={styles.passwordInput}
+                value={password}
+                onChangeText={setPassword}
+                onFocus={() => handleFieldFocus("password")}
+                onBlur={() => setFocusedField(null)}
+                secureTextEntry={!showPassword}
+                textContentType="newPassword"
+                autoComplete="new-password"
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
+                onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+                blurOnSubmit={false}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowPassword((prev) => !prev)}
+                activeOpacity={0.8}
+                accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={22}
+                  color="#475569"
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Confirm Password */}
+          <View onLayout={onFieldLayout("confirmPassword")}>
+            <Text style={styles.label}>Confirm Password</Text>
+            <View style={[styles.passwordWrap, focusedField === "confirmPassword" && styles.inputFocused]}>
+              <TextInput
+                ref={confirmPasswordRef}
+                style={styles.passwordInput}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                onFocus={() => handleFieldFocus("confirmPassword")}
+                onBlur={() => setFocusedField(null)}
+                secureTextEntry={!showConfirmPassword}
+                textContentType="newPassword"
+                autoComplete="new-password"
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
+                onSubmitEditing={() => waterMeterRef.current?.focus()}
+                blurOnSubmit={false}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowConfirmPassword((prev) => !prev)}
+                activeOpacity={0.8}
+                accessibilityLabel={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+              >
+                <Ionicons
+                  name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
+                  size={22}
+                  color="#475569"
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Water Meter */}
+          <View onLayout={onFieldLayout("waterMeter")}>
             <Text style={styles.label}>Water Meter (m3)</Text>
             <TextInput
               ref={waterMeterRef}
               style={[styles.input, focusedField === "waterMeter" && styles.inputFocused]}
               value={waterMeter}
               onChangeText={setWaterMeter}
-              onFocus={() => {
-                setFocusedField("waterMeter");
-                scrollWaterMeterAboveKeyboard();
-              }}
+              onFocus={() => handleFieldFocus("waterMeter")}
               onBlur={() => setFocusedField(null)}
-              onPressIn={scrollWaterMeterAboveKeyboard}
               keyboardType="numeric"
               returnKeyType="done"
               onSubmitEditing={handleRegister}
