@@ -46,6 +46,14 @@ export default function NotificationScreen() {
     }, [markAllAsRead]),
   );
 
+  const handleGoToReports = () => {
+    try {
+      router.push("/regular_user/view-reports");
+    } catch {
+      // Silently fail - navigation errors should not crash the app
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.animatedScreen}>
@@ -64,12 +72,25 @@ export default function NotificationScreen() {
 
         {loading ? (
           <View style={styles.centered}>
-            <ActivityIndicator size="large" color="#1e88e5" />
+            <ActivityIndicator size="large" color="#0284c7" />
           </View>
         ) : items.length === 0 ? (
-          <View style={styles.centered}>
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIconWrap}>
+              <Ionicons name="notifications-outline" size={48} color="#94A3B8" />
+            </View>
             <Text style={styles.emptyTitle}>No notifications yet</Text>
-            <Text style={styles.emptySub}>Your report updates will appear here.</Text>
+            <Text style={styles.emptySub}>
+              You'll receive updates here when the status of your submitted reports changes.
+            </Text>
+            <TouchableOpacity
+              style={styles.emptyCta}
+              onPress={handleGoToReports}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="eye-outline" size={20} color="#FFFFFF" />
+              <Text style={styles.emptyCtaText}>View My Reports</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <FlatList
@@ -170,6 +191,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 20,
   },
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingTop: 60,
+    paddingHorizontal: 24,
+  },
   emptyTitle: {
     color: "#0F172A",
     fontSize: 20,
@@ -180,5 +208,37 @@ const styles = StyleSheet.create({
     color: "#475569",
     fontSize: 14,
     textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 28,
+    maxWidth: 300,
+  },
+  emptyIconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  emptyCta: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#0EA5E9",
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 16,
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  emptyCtaText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
   },
 });

@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { type Href, useRouter } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import {
   collectionGroup,
@@ -75,6 +75,7 @@ export default function AllReportListScreen() {
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<AllReportListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [retryCounter, setRetryCounter] = useState(0);
 
   useEffect(() => {
     let unsubscribeReports: (() => void) | null = null;
@@ -199,18 +200,28 @@ export default function AllReportListScreen() {
         unsubscribeReports();
       }
     };
-  }, [router]);
+  }, [router, retryCounter]);
 
   const monthLabel = useMemo(() => {
     const now = new Date();
     return now.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   }, []);
 
+  const handleRetry = () => {
+    try {
+      setLoading(true);
+      setError(null);
+      setRetryCounter((prev) => prev + 1);
+    } catch {
+      // Silently fail — retry should not crash the app
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#ffffff" />
+          <ActivityIndicator size="large" color="#0284c7" />
         </View>
       </SafeAreaView>
     );
@@ -232,25 +243,41 @@ export default function AllReportListScreen() {
 
       <Text style={styles.monthText}>{monthLabel}</Text>
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-      <FlatList
-        data={reports}
-        keyExtractor={(item) => `${item.userId}-${item.reportId}`}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={<Text style={styles.emptyText}>No reports yet.</Text>}
-        renderItem={({ item }) => (
-          <AllRepComponent
-            item={item}
-            onPress={() =>
-              router.push({
-                pathname: "/regular_user/view_allrep/viewallreports",
-                params: { reportId: item.reportId, userId: item.userId },
-              })
-            }
-          />
-        )}
-      />
+      {error ? (
+        <View style={styles.errorContainer}>
+          <View style={styles.errorIconWrap}>
+            <Ionicons name="alert-circle-outline" size={32} color="#EF4444" />
+          </View>
+          <Text style={styles.errorTitle}>Unable to load reports</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={handleRetry}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="refresh-outline" size={18} color="#FFFFFF" />
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={reports}
+          keyExtractor={(item) => `${item.userId}-${item.reportId}`}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={<Text style={styles.emptyText}>No reports yet.</Text>}
+          renderItem={({ item }) => (
+            <AllRepComponent
+              item={item}
+              onPress={() =>
+                router.push({
+                  pathname: "/regular_user/view_allrep/viewallreports",
+                  params: { reportId: item.reportId, userId: item.userId },
+                })
+              }
+            />
+          )}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -309,7 +336,52 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "#ef4444",
-    fontSize: 13,
-    marginBottom: 10,
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  errorContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    paddingBottom: 60,
+  },
+  errorIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#FEF2F2",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  errorTitle: {
+    color: "#0F172A",
+    fontSize: 18,
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  retryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#0EA5E9",
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 14,
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
   },
 });

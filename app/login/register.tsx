@@ -1,11 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Alert,
   Image,
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -21,16 +20,20 @@ import {
 } from "../../lib/login/addressSelectionStore";
 import { sendEmailVerificationOtp } from "../../lib/login/emailVerificationOtp";
 import { setPendingRegistration } from "../../lib/login/pendingRegistrationStore";
+import { useRegisterKeyboardScroll } from "../../lib/login/registerbehavior";
 import { prepareRegistrationParams } from "../../lib/login/registerfunctions";
-
-const isMobile = Platform.OS !== "web";
-
-/** Offset above the field to keep some label/padding visible */
-const SCROLL_OFFSET = 130;
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const scrollViewRef = useRef<ScrollView>(null);
+  const {
+    scrollViewRef,
+    registerInputRef,
+    registerFieldLayout,
+    followFocusedField,
+    focusNextField,
+    handleScroll,
+    handleScrollBeginDrag,
+  } = useRegisterKeyboardScroll();
 
   const [fullName, setFullName] = useState<string>("");
   const [address, setAddress] = useState<string>("");
@@ -41,38 +44,6 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
-
-  // TextInput refs for focus chaining
-  const fullNameRef = useRef<TextInput>(null);
-  const emailRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
-  const confirmPasswordRef = useRef<TextInput>(null);
-  const waterMeterRef = useRef<TextInput>(null);
-
-  // Layout Y positions of each field wrapper (relative to ScrollView content)
-  const fieldYPositions = useRef<Record<string, number>>({});
-
-  const scrollToField = useCallback((fieldName: string) => {
-    const y = fieldYPositions.current[fieldName];
-    if (y !== undefined && scrollViewRef.current) {
-      const targetY = Math.max(y - SCROLL_OFFSET, 0);
-      scrollViewRef.current.scrollTo({ y: targetY, animated: true });
-    }
-  }, []);
-
-  // When the keyboard shows while a field is focused, re-scroll to that field
-  useEffect(() => {
-    if (!isMobile) return undefined;
-
-    const sub = Keyboard.addListener("keyboardDidShow", () => {
-      if (focusedField) {
-        scrollToField(focusedField);
-      }
-    });
-
-    return () => sub.remove();
-  }, [focusedField, scrollToField]);
 
   useFocusEffect(
     useCallback(() => {
@@ -130,17 +101,6 @@ export default function RegisterScreen() {
     }
   };
 
-  /** Helper to register a field's Y position via onLayout */
-  const onFieldLayout = (fieldName: string) => (event: { nativeEvent: { layout: { y: number } } }) => {
-    fieldYPositions.current[fieldName] = event.nativeEvent.layout.y;
-  };
-
-  /** Focus handler that also scrolls to the field */
-  const handleFieldFocus = (fieldName: string) => {
-    setFocusedField(fieldName);
-    scrollToField(fieldName);
-  };
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -152,6 +112,8 @@ export default function RegisterScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
+        onScroll={handleScroll}
+        onScrollBeginDrag={handleScrollBeginDrag}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
@@ -165,76 +127,76 @@ export default function RegisterScreen() {
         <Text style={styles.subtitle}>Sign up to get started</Text>
 
         <View style={styles.form}>
-          {/* Full Name */}
-          <View onLayout={onFieldLayout("fullName")}>
+          <View
+            style={styles.fieldGroup}
+            onLayout={registerFieldLayout("fullName")}
+          >
             <Text style={styles.label}>Full Name (eg. Juan Dela Cruz)</Text>
             <TextInput
-              ref={fullNameRef}
-              style={[styles.input, focusedField === "fullName" && styles.inputFocused]}
+              ref={registerInputRef("fullName")}
+              style={styles.input}
               value={fullName}
               onChangeText={setFullName}
-              onFocus={() => handleFieldFocus("fullName")}
-              onBlur={() => setFocusedField(null)}
+              onFocus={() => followFocusedField("fullName")}
+              onPressIn={() => followFocusedField("fullName")}
               returnKeyType="next"
-              onSubmitEditing={() => {
-                Keyboard.dismiss();
-                openAddressSelector();
-              }}
-              blurOnSubmit={true}
+              blurOnSubmit={false}
+              onSubmitEditing={() => focusNextField("fullName")}
             />
           </View>
 
-          {/* Address (selection field) */}
-          <View onLayout={onFieldLayout("address")}>
-            <Text style={styles.label}>Address</Text>
-            <TouchableOpacity
-              style={styles.input}
-              activeOpacity={0.8}
-              onPress={openAddressSelector}
-            >
-              <Text style={address ? styles.inputText : styles.placeholderText}>
-                {address || "Select your barangay"}
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={styles.label}>Address</Text>
+          <TouchableOpacity
+            style={styles.input}
+            activeOpacity={0.8}
+            onPress={openAddressSelector}
+          >
+            <Text style={address ? styles.inputText : styles.placeholderText}>
+              {address || "Select your barangay"}
+            </Text>
+          </TouchableOpacity>
 
-          {/* Email */}
-          <View onLayout={onFieldLayout("email")}>
+          <View
+            style={styles.fieldGroup}
+            onLayout={registerFieldLayout("email")}
+          >
             <Text style={styles.label}>Email</Text>
             <TextInput
-              ref={emailRef}
-              style={[styles.input, focusedField === "email" && styles.inputFocused]}
+              ref={registerInputRef("email")}
+              style={styles.input}
               value={email}
               onChangeText={setEmail}
-              onFocus={() => handleFieldFocus("email")}
-              onBlur={() => setFocusedField(null)}
+              onFocus={() => followFocusedField("email")}
+              onPressIn={() => followFocusedField("email")}
               keyboardType="email-address"
               autoCapitalize="none"
               returnKeyType="next"
-              onSubmitEditing={() => passwordRef.current?.focus()}
               blurOnSubmit={false}
+              onSubmitEditing={() => focusNextField("email")}
             />
           </View>
 
-          {/* Password */}
-          <View onLayout={onFieldLayout("password")}>
+          <View
+            style={styles.fieldGroup}
+            onLayout={registerFieldLayout("password")}
+          >
             <Text style={styles.label}>Password</Text>
-            <View style={[styles.passwordWrap, focusedField === "password" && styles.inputFocused]}>
+            <View style={styles.passwordWrap}>
               <TextInput
-                ref={passwordRef}
+                ref={registerInputRef("password")}
                 style={styles.passwordInput}
                 value={password}
                 onChangeText={setPassword}
-                onFocus={() => handleFieldFocus("password")}
-                onBlur={() => setFocusedField(null)}
+                onFocus={() => followFocusedField("password")}
+                onPressIn={() => followFocusedField("password")}
                 secureTextEntry={!showPassword}
                 textContentType="newPassword"
                 autoComplete="new-password"
                 autoCapitalize="none"
                 autoCorrect={false}
                 returnKeyType="next"
-                onSubmitEditing={() => confirmPasswordRef.current?.focus()}
                 blurOnSubmit={false}
+                onSubmitEditing={() => focusNextField("password")}
               />
               <TouchableOpacity
                 style={styles.eyeButton}
@@ -251,25 +213,27 @@ export default function RegisterScreen() {
             </View>
           </View>
 
-          {/* Confirm Password */}
-          <View onLayout={onFieldLayout("confirmPassword")}>
+          <View
+            style={styles.fieldGroup}
+            onLayout={registerFieldLayout("confirmPassword")}
+          >
             <Text style={styles.label}>Confirm Password</Text>
-            <View style={[styles.passwordWrap, focusedField === "confirmPassword" && styles.inputFocused]}>
+            <View style={styles.passwordWrap}>
               <TextInput
-                ref={confirmPasswordRef}
+                ref={registerInputRef("confirmPassword")}
                 style={styles.passwordInput}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                onFocus={() => handleFieldFocus("confirmPassword")}
-                onBlur={() => setFocusedField(null)}
+                onFocus={() => followFocusedField("confirmPassword")}
+                onPressIn={() => followFocusedField("confirmPassword")}
                 secureTextEntry={!showConfirmPassword}
                 textContentType="newPassword"
                 autoComplete="new-password"
                 autoCapitalize="none"
                 autoCorrect={false}
                 returnKeyType="next"
-                onSubmitEditing={() => waterMeterRef.current?.focus()}
                 blurOnSubmit={false}
+                onSubmitEditing={() => focusNextField("confirmPassword")}
               />
               <TouchableOpacity
                 style={styles.eyeButton}
@@ -286,19 +250,21 @@ export default function RegisterScreen() {
             </View>
           </View>
 
-          {/* Water Meter */}
-          <View onLayout={onFieldLayout("waterMeter")}>
+          <View
+            style={styles.fieldGroup}
+            onLayout={registerFieldLayout("waterMeter")}
+          >
             <Text style={styles.label}>Water Meter (m3)</Text>
             <TextInput
-              ref={waterMeterRef}
-              style={[styles.input, focusedField === "waterMeter" && styles.inputFocused]}
+              ref={registerInputRef("waterMeter")}
+              style={styles.input}
               value={waterMeter}
               onChangeText={setWaterMeter}
-              onFocus={() => handleFieldFocus("waterMeter")}
-              onBlur={() => setFocusedField(null)}
+              onFocus={() => followFocusedField("waterMeter")}
+              onPressIn={() => followFocusedField("waterMeter")}
               keyboardType="numeric"
               returnKeyType="done"
-              onSubmitEditing={handleRegister}
+              onSubmitEditing={() => focusNextField("waterMeter")}
             />
           </View>
         </View>
@@ -381,11 +347,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     color: "#0F172A",
     fontSize: 16,
-  },
-
-  inputFocused: {
-    borderColor: "#0EA5E9",
-    borderWidth: 1.5,
   },
 
   passwordWrap: {

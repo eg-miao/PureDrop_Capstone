@@ -1,10 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { type Href, useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Image,
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,50 +13,32 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { finishLogout } from "../../lib/auth/logoutState";
 import { getLoginErrorMessage } from "../../lib/login/logerror";
 import { loginUser } from "../../lib/login/loginfunctions";
 
 const FORGOT_PASSWORD_ROUTE = "/login/forgot_password" as Href;
-const isMobile = Platform.OS !== "web";
-
-/** Offset above the field to keep some label/padding visible */
-const SCROLL_OFFSET = 130;
 
 export default function LoginScreen() {
   const router = useRouter();
-  const scrollViewRef = useRef<ScrollView>(null);
+  const passwordRef = useRef<TextInput>(null);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  const passwordRef = useRef<TextInput>(null);
-
-  // Layout Y positions of each field wrapper (relative to ScrollView content)
-  const fieldYPositions = useRef<Record<string, number>>({});
-
-  const scrollToField = useCallback((fieldName: string) => {
-    const y = fieldYPositions.current[fieldName];
-    if (y !== undefined && scrollViewRef.current) {
-      const targetY = Math.max(y - SCROLL_OFFSET, 0);
-      scrollViewRef.current.scrollTo({ y: targetY, animated: true });
-    }
+  useEffect(() => {
+    finishLogout();
   }, []);
 
-  // When the keyboard shows while a field is focused, re-scroll to that field
-  useEffect(() => {
-    if (!isMobile) return undefined;
-
-    const sub = Keyboard.addListener("keyboardDidShow", () => {
-      if (focusedField) {
-        scrollToField(focusedField);
-      }
-    });
-
-    return () => sub.remove();
-  }, [focusedField, scrollToField]);
+  const focusPassword = () => {
+    try {
+      passwordRef.current?.focus();
+    } catch {
+      // Silently fail — focus errors should not crash the app
+    }
+  };
 
   const handleLogin = async () => {
     try {
@@ -74,17 +55,6 @@ export default function LoginScreen() {
     }
   };
 
-  /** Helper to register a field's Y position via onLayout */
-  const onFieldLayout = (fieldName: string) => (event: { nativeEvent: { layout: { y: number } } }) => {
-    fieldYPositions.current[fieldName] = event.nativeEvent.layout.y;
-  };
-
-  /** Focus handler that also scrolls to the field */
-  const handleFieldFocus = (fieldName: string) => {
-    setFocusedField(fieldName);
-    scrollToField(fieldName);
-  };
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -92,12 +62,10 @@ export default function LoginScreen() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 24 : 0}
     >
       <ScrollView
-        ref={scrollViewRef}
         contentContainerStyle={styles.scrollContent}
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        scrollEventThrottle={16}
         style={styles.scrollView}
       >
         <Image
@@ -110,55 +78,43 @@ export default function LoginScreen() {
         <Text style={styles.subtitle}>Login to continue</Text>
 
         <View style={styles.form}>
-          {/* Email */}
-          <View onLayout={onFieldLayout("email")}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={[styles.input, focusedField === "email" && styles.inputFocused]}
-              value={email}
-              onChangeText={setEmail}
-              onFocus={() => handleFieldFocus("email")}
-              onBlur={() => setFocusedField(null)}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              returnKeyType="next"
-              onSubmitEditing={() => passwordRef.current?.focus()}
-              blurOnSubmit={false}
-            />
-          </View>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={focusPassword}
+          />
 
-          {/* Password */}
-          <View onLayout={onFieldLayout("password")}>
-            <Text style={styles.label}>Password</Text>
-            <View style={[styles.passwordWrap, focusedField === "password" && styles.inputFocused]}>
-              <TextInput
-                ref={passwordRef}
-                style={styles.passwordInput}
-                value={password}
-                onChangeText={setPassword}
-                onFocus={() => handleFieldFocus("password")}
-                onBlur={() => setFocusedField(null)}
-                secureTextEntry={!showPassword}
-                textContentType="password"
-                autoComplete="password"
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.passwordWrap}>
+            <TextInput
+              ref={passwordRef}
+              style={styles.passwordInput}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              textContentType="password"
+              autoComplete="password"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <TouchableOpacity
+              style={styles.eyeButton}
+              onPress={() => setShowPassword((prev) => !prev)}
+              activeOpacity={0.8}
+              accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                size={22}
+                color="#475569"
               />
-              <TouchableOpacity
-                style={styles.eyeButton}
-                onPress={() => setShowPassword((prev) => !prev)}
-                activeOpacity={0.8}
-                accessibilityLabel={showPassword ? "Hide password" : "Show password"}
-              >
-                <Ionicons
-                  name={showPassword ? "eye-off-outline" : "eye-outline"}
-                  size={22}
-                  color="#475569"
-                />
-              </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -246,11 +202,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: "#0F172A",
     fontSize: 16,
-  },
-
-  inputFocused: {
-    borderColor: "#0EA5E9",
-    borderWidth: 1.5,
   },
 
   passwordWrap: {

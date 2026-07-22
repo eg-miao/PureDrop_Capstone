@@ -7,12 +7,15 @@ import { CreateReportFormContent } from "../../../components/create_report/Creat
 import { GpsMapModal } from "../../../components/create_report/GpsMapModal";
 import { styles } from "../../../components/create_report/createReportStyles";
 import { useCreateReportForm } from "../../../components/create_report/useCreateReportForm";
+import { isLogoutInProgress } from "../../../lib/auth/logoutState";
 
 export default function CreateReportScreen() {
   const form = useCreateReportForm();
   const router = useRouter();
   const navigation = useNavigation();
+  const discardAlertVisibleRef = useRef(false);
   const isDiscardingRef = useRef(false);
+  const resetFormRef = useRef(form.resetForm);
   const [attachmentReview, setAttachmentReview] = useState<AttachmentMachineLearningStatus | null>(
     null,
   );
@@ -29,34 +32,72 @@ export default function CreateReportScreen() {
     form.waterMeter !== "";
 
   useEffect(() => {
+    resetFormRef.current = form.resetForm;
+  }, [form.resetForm]);
+
+  useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
       // If we're submitting, or the form is clean, let the navigation happen
-      if (!isFormDirty || isSubmitting || isDiscardingRef.current) {
+      if (!isFormDirty || isSubmitting || isDiscardingRef.current || isLogoutInProgress()) {
         return;
       }
 
+      const beforeRemoveEvent = e as typeof e & { preventDefault: () => void };
+
       // Prevent default behavior of leaving the screen
-      e.preventDefault();
+      beforeRemoveEvent.preventDefault();
+
+      if (discardAlertVisibleRef.current) {
+        return;
+      }
+
+      discardAlertVisibleRef.current = true;
 
       Alert.alert(
         "Discard Report?",
         "You have unfinished details in your report. Are you sure you want to discard them?",
         [
-          { text: "Keep Editing", style: "cancel", onPress: () => {} },
+          {
+            text: "Keep Editing",
+            style: "cancel",
+            onPress: () => {
+              discardAlertVisibleRef.current = false;
+            },
+          },
           {
             text: "Discard",
             style: "destructive",
             onPress: () => {
+              if (isDiscardingRef.current) {
+                return;
+              }
+
+              discardAlertVisibleRef.current = false;
               isDiscardingRef.current = true;
-              navigation.dispatch(e.data.action);
+              resetFormRef.current();
+              navigation.dispatch(beforeRemoveEvent.data.action);
             },
           },
-        ]
+        ],
+        {
+          onDismiss: () => {
+            discardAlertVisibleRef.current = false;
+          },
+        },
       );
     });
 
     return unsubscribe;
   }, [navigation, isFormDirty, isSubmitting]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      discardAlertVisibleRef.current = false;
+      isDiscardingRef.current = false;
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   const handleBackPress = () => {
     if (router.canGoBack()) {
